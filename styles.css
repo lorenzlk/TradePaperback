@@ -226,6 +226,15 @@ body {
     padding: 12px 24px;
     border-radius: 20px;
     backdrop-filter: blur(10px);
+    margin-bottom: 10px;
+}
+
+.debug-info {
+    font-size: 12px;
+    font-family: monospace;
+    color: #0f0;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 8px 12px;
 }
 
 /* Success Feedback */

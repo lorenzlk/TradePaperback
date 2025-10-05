@@ -47,6 +47,9 @@ async function initializeScanner() {
         // Wait for video to be ready
         await video.play();
         
+        // Wait a bit for video to stabilize
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         // Hide loading, show scanner
         loading.classList.add('hidden');
         scannerContainer.classList.remove('hidden');
@@ -55,6 +58,12 @@ async function initializeScanner() {
         
         if (CONFIG.DEBUG_MODE) {
             console.log('✅ Camera initialized successfully');
+            console.log('📹 Final video state:', {
+                width: video.videoWidth,
+                height: video.videoHeight,
+                readyState: video.readyState,
+                paused: video.paused
+            });
         }
         
         // Initialize ZXing barcode reader
@@ -73,25 +82,57 @@ function startBarcodeDetection() {
         
         if (CONFIG.DEBUG_MODE) {
             console.log('🔍 Starting barcode detection...');
+            console.log('📹 Video element:', video);
+            console.log('📹 Video ready state:', video.readyState);
+            console.log('📹 Video dimensions:', video.videoWidth, 'x', video.videoHeight);
         }
+        
+        // Add a scan counter for debugging
+        let scanAttempts = 0;
+        
+        // Start continuous decoding with hints for better detection
+        const hints = new Map();
+        hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+            ZXing.BarcodeFormat.UPC_A,
+            ZXing.BarcodeFormat.UPC_E,
+            ZXing.BarcodeFormat.EAN_13,
+            ZXing.BarcodeFormat.EAN_8
+        ]);
+        
+        codeReader = new ZXing.BrowserMultiFormatReader(hints);
         
         // Start continuous decoding
         codeReader.decodeFromVideoElement(video, (result, error) => {
+            scanAttempts++;
+            
             if (result) {
+                if (CONFIG.DEBUG_MODE) {
+                    console.log('✅ BARCODE DETECTED!', result);
+                }
                 handleBarcodeDetected(result);
             }
             
-            // Ignore common errors (no barcode in frame, etc.)
+            // Log scanning attempts every 50 tries
+            if (CONFIG.DEBUG_MODE && scanAttempts % 50 === 0) {
+                console.log(`🔍 Scan attempts: ${scanAttempts} (still scanning...)`);
+            }
+            
+            // Log errors (except common "not found" errors)
             if (error && error.name !== 'NotFoundException') {
                 if (CONFIG.DEBUG_MODE) {
-                    console.warn('Decode error:', error);
+                    console.warn('⚠️ Decode error:', error.name, error.message);
                 }
             }
         });
         
+        if (CONFIG.DEBUG_MODE) {
+            console.log('✅ Barcode detection started successfully');
+        }
+        
     } catch (error) {
         console.error('❌ Failed to start barcode detection:', error);
-        showError('Failed to initialize barcode scanner');
+        showError('Failed to initialize barcode scanner: ' + error.message);
     }
 }
 

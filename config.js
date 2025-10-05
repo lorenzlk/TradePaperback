@@ -18,7 +18,7 @@ const CONFIG = {
   FRAME_PROCESSING_INTERVAL: 250, // Process every N milliseconds (not every frame)
   
   // Debug mode
-  DEBUG_MODE: false, // Set to true for console logging
+  DEBUG_MODE: true, // ENABLED for troubleshooting // Set to true for console logging
   
   // Retry settings
   MAX_RETRIES: 3,
