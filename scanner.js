@@ -124,54 +124,71 @@ function startBarcodeDetection() {
         // Set decoding delay for better accuracy with small barcodes
         codeReader.timeBetweenDecodingAttempts = 100; // Faster attempts
         
-        console.log('🎬 Starting decodeFromVideoElement...');
+        console.log('🎬 Starting continuous scan loop...');
         
-        // Start continuous decoding
-        const controlId = codeReader.decodeFromVideoElement(video, (result, error) => {
-            console.log('📞 Scanner callback called!', { result, error });  // This should fire immediately
-            scanAttempts++;
-            
-            // Update debug display every 10 attempts
-            if (scanAttempts % 10 === 0) {
-                const debugEl = document.getElementById('scanner-debug');
-                if (debugEl) {
-                    debugEl.textContent = `🔍 Attempts: ${scanAttempts}`;
+        // Use continuous scanning loop (new ZXing API)
+        let isScanning = true;
+        
+        async function continuousScan() {
+            while (isScanning) {
+                try {
+                    scanAttempts++;
+                    
+                    // Update debug display every 10 attempts
+                    if (scanAttempts % 10 === 0) {
+                        const debugEl = document.getElementById('scanner-debug');
+                        if (debugEl) {
+                            debugEl.textContent = `🔍 Attempts: ${scanAttempts}`;
+                        }
+                    }
+                    
+                    // Try to decode from video element
+                    const result = await codeReader.decodeFromVideoElement(video);
+                    
+                    if (result) {
+                        console.log('✅ BARCODE DETECTED!', result);
+                        handleBarcodeDetected(result);
+                    }
+                    
+                    // Log scanning attempts every 50 tries
+                    if (CONFIG.DEBUG_MODE && scanAttempts % 50 === 0) {
+                        console.log(`🔍 Scan attempts: ${scanAttempts} (still scanning...)`);
+                        updateStatus(`Scanning... ${scanAttempts} attempts`);
+                    }
+                    
+                } catch (error) {
+                    // NotFoundException is expected when no barcode in frame
+                    if (error.name !== 'NotFoundException') {
+                        if (CONFIG.DEBUG_MODE) {
+                            console.warn('⚠️ Decode error:', error.name, error.message);
+                        }
+                    }
                 }
+                
+                // Small delay between scans to avoid blocking
+                await new Promise(resolve => setTimeout(resolve, CONFIG.FRAME_PROCESSING_INTERVAL));
             }
-            
-            if (result) {
-                if (CONFIG.DEBUG_MODE) {
-                    console.log('✅ BARCODE DETECTED!', result);
-                }
-                handleBarcodeDetected(result);
-            }
-            
-            // Log scanning attempts every 50 tries
-            if (CONFIG.DEBUG_MODE && scanAttempts % 50 === 0) {
-                console.log(`🔍 Scan attempts: ${scanAttempts} (still scanning...)`);
-                updateStatus(`Scanning... ${scanAttempts} attempts`);
-            }
-            
-            // Log errors (except common "not found" errors)
-            if (error && error.name !== 'NotFoundException') {
-                if (CONFIG.DEBUG_MODE) {
-                    console.warn('⚠️ Decode error:', error.name, error.message);
-                }
-            }
-        });
+        }
+        
+        // Start the continuous scanning loop
+        continuousScan();
+        
+        // Store the scanning state so we can stop it later
+        window.stopScanning = () => { isScanning = false; };
         
         console.log('✅ Barcode detection started successfully');
-        console.log('🎮 Control ID:', controlId);
         
         // Visual feedback that scanning is active
         setTimeout(() => {
             const debugEl = document.getElementById('scanner-debug');
             if (debugEl && scanAttempts === 0) {
-                debugEl.textContent = '⚠️ Scanner initialized but not scanning!';
+                debugEl.textContent = '⚠️ Scanner loop not running!';
                 debugEl.style.color = '#ff0';
-                console.warn('⚠️ Scanner callback never called - possible ZXing issue');
+                console.warn('⚠️ Scan loop never started');
+            } else if (CONFIG.DEBUG_MODE) {
+                console.log(`✅ Scanner running: ${scanAttempts} attempts so far`);
             }
-        }, 3000);
+        }, 2000);
         
     } catch (error) {
         console.error('❌ Failed to start barcode detection:', error);
