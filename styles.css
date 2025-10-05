@@ -293,6 +293,23 @@ body {
 .status-text {
     font-size: 14px;
     color: #fff;
+    margin-bottom: 10px;
+}
+
+.manual-entry-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.3s;
+}
+
+.manual-entry-btn:active {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 /* Error Message */
@@ -326,6 +343,95 @@ body {
 /* Hidden Class */
 .hidden {
     display: none !important;
+}
+
+/* Manual Entry Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+}
+
+.modal-content {
+    background: #1a1a1a;
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 400px;
+    width: 100%;
+    color: #fff;
+}
+
+.modal-content h2 {
+    margin: 0 0 10px 0;
+    font-size: 24px;
+}
+
+.modal-content p {
+    margin: 0 0 20px 0;
+    color: #aaa;
+    font-size: 14px;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    border: 2px solid #333;
+    border-radius: 8px;
+    background: #000;
+    color: #fff;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    text-align: center;
+    letter-spacing: 1px;
+    font-family: monospace;
+}
+
+.modal-content input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.modal-buttons button {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: #fff;
+}
+
+.btn-primary:active {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #333;
+    color: #fff;
+}
+
+.btn-secondary:active {
+    background: #444;
 }
 
 /* Landscape Warning (Optional) */

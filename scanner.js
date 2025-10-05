@@ -16,6 +16,11 @@ const successFeedback = document.getElementById('success-feedback');
 const statusText = document.getElementById('status-text');
 const errorMessage = document.getElementById('error-message');
 const errorText = document.getElementById('error-text');
+const manualEntryBtn = document.getElementById('manual-entry-btn');
+const manualEntryModal = document.getElementById('manual-entry-modal');
+const manualUpcInput = document.getElementById('manual-upc-input');
+const manualSubmitBtn = document.getElementById('manual-submit-btn');
+const manualCancelBtn = document.getElementById('manual-cancel-btn');
 
 // Initialize scanner on page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -33,11 +38,14 @@ async function initializeScanner() {
         updateStatus('Requesting camera access...');
         
         // Request camera permission and get video stream
+        // Higher resolution helps with small barcodes
         videoStream = await navigator.mediaDevices.getUserMedia({
             video: {
                 facingMode: 'environment', // Use rear camera
-                width: { ideal: 1920 },
-                height: { ideal: 1080 }
+                width: { ideal: 1920, min: 1280 },
+                height: { ideal: 1080, min: 720 },
+                focusMode: 'continuous', // Keep autofocusing
+                aspectRatio: { ideal: 16/9 }
             }
         });
         
@@ -90,17 +98,23 @@ function startBarcodeDetection() {
         // Add a scan counter for debugging
         let scanAttempts = 0;
         
-        // Start continuous decoding with hints for better detection
+        // Start continuous decoding with AGGRESSIVE hints for small barcodes
         const hints = new Map();
         hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+        hints.set(ZXing.DecodeHintType.ASSUME_GS1, true); // Better for product barcodes
+        hints.set(ZXing.DecodeHintType.ALSO_INVERTED, true); // Try inverted images
         hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
             ZXing.BarcodeFormat.UPC_A,
             ZXing.BarcodeFormat.UPC_E,
             ZXing.BarcodeFormat.EAN_13,
-            ZXing.BarcodeFormat.EAN_8
+            ZXing.BarcodeFormat.EAN_8,
+            ZXing.BarcodeFormat.CODE_128 // Sometimes used for products
         ]);
         
         codeReader = new ZXing.BrowserMultiFormatReader(hints);
+        
+        // Set decoding delay for better accuracy with small barcodes
+        codeReader.timeBetweenDecodingAttempts = 100; // Faster attempts
         
         // Start continuous decoding
         codeReader.decodeFromVideoElement(video, (result, error) => {
@@ -389,4 +403,57 @@ document.addEventListener('visibilitychange', () => {
         }
     }
 });
+
+// Manual entry button
+if (manualEntryBtn) {
+    manualEntryBtn.addEventListener('click', () => {
+        manualEntryModal.classList.remove('hidden');
+        manualUpcInput.focus();
+    });
+}
+
+// Manual entry submit
+if (manualSubmitBtn) {
+    manualSubmitBtn.addEventListener('click', () => {
+        const upc = manualUpcInput.value.trim();
+        
+        if (!upc) {
+            showError('Please enter a UPC code');
+            return;
+        }
+        
+        if (!isValidUPC(upc)) {
+            showError('Invalid UPC format. Must be 8-14 digits.');
+            return;
+        }
+        
+        // Create a fake result object to match scanner format
+        const fakeResult = {
+            text: upc,
+            format: upc.length === 12 ? 'UPC_A' : 'EAN_13'
+        };
+        
+        manualEntryModal.classList.add('hidden');
+        manualUpcInput.value = '';
+        
+        handleBarcodeDetected(fakeResult);
+    });
+}
+
+// Manual entry cancel
+if (manualCancelBtn) {
+    manualCancelBtn.addEventListener('click', () => {
+        manualEntryModal.classList.add('hidden');
+        manualUpcInput.value = '';
+    });
+}
+
+// Allow Enter key to submit
+if (manualUpcInput) {
+    manualUpcInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            manualSubmitBtn.click();
+        }
+    });
+}
 

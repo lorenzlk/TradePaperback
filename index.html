@@ -61,6 +61,20 @@
         <!-- Status Bar -->
         <div class="status-bar">
             <div id="status-text" class="status-text">Ready to scan</div>
+            <button id="manual-entry-btn" class="manual-entry-btn">Can't scan? Enter manually</button>
+        </div>
+    </div>
+
+    <!-- Manual Entry Modal -->
+    <div id="manual-entry-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Enter UPC Manually</h2>
+            <p>Type the barcode number below:</p>
+            <input type="text" id="manual-upc-input" placeholder="012345678905" maxlength="14" pattern="[0-9]*" inputmode="numeric">
+            <div class="modal-buttons">
+                <button id="manual-submit-btn" class="btn-primary">Submit</button>
+                <button id="manual-cancel-btn" class="btn-secondary">Cancel</button>
+            </div>
         </div>
     </div>
 
