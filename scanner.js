@@ -120,6 +120,14 @@ function startBarcodeDetection() {
         codeReader.decodeFromVideoElement(video, (result, error) => {
             scanAttempts++;
             
+            // Update debug display every 10 attempts
+            if (scanAttempts % 10 === 0) {
+                const debugEl = document.getElementById('scanner-debug');
+                if (debugEl) {
+                    debugEl.textContent = `🔍 Attempts: ${scanAttempts}`;
+                }
+            }
+            
             if (result) {
                 if (CONFIG.DEBUG_MODE) {
                     console.log('✅ BARCODE DETECTED!', result);
@@ -130,6 +138,7 @@ function startBarcodeDetection() {
             // Log scanning attempts every 50 tries
             if (CONFIG.DEBUG_MODE && scanAttempts % 50 === 0) {
                 console.log(`🔍 Scan attempts: ${scanAttempts} (still scanning...)`);
+                updateStatus(`Scanning... ${scanAttempts} attempts`);
             }
             
             // Log errors (except common "not found" errors)
@@ -143,6 +152,11 @@ function startBarcodeDetection() {
         if (CONFIG.DEBUG_MODE) {
             console.log('✅ Barcode detection started successfully');
         }
+        
+        // Visual feedback that scanning is active
+        setTimeout(() => {
+            updateStatus(`Scanner active (${scanAttempts} scans)`);
+        }, 2000);
         
     } catch (error) {
         console.error('❌ Failed to start barcode detection:', error);
