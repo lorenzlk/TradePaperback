@@ -124,68 +124,45 @@ function startBarcodeDetection() {
         // Set decoding delay for better accuracy with small barcodes
         codeReader.timeBetweenDecodingAttempts = 100; // Faster attempts
         
-        console.log('🎬 Starting continuous scan loop...');
+        console.log('🎬 Starting continuous decode with ZXing built-in loop...');
         
-        // Use continuous scanning loop (new ZXing API)
-        let isScanning = true;
-        
-        async function continuousScan() {
-            console.log('🔄 Starting continuous scan loop...');
-            while (isScanning) {
-                try {
-                    scanAttempts++;
-                    
-                    // Update debug display on every attempt (not just every 10)
+        // Use ZXing's built-in continuous decoding
+        // This handles its own loop internally - we just pass a callback
+        const controls = await codeReader.decodeFromVideoElement(
+            video,
+            (result, error, controls) => {
+                scanAttempts++;
+                
+                // Update debug display every 10 attempts
+                if (scanAttempts % 10 === 0) {
                     const debugEl = document.getElementById('scanner-debug');
                     if (debugEl) {
                         debugEl.textContent = `🔍 Attempts: ${scanAttempts}`;
                     }
-                    
-                    if (scanAttempts === 1) {
-                        console.log('🎯 First scan attempt...');
-                    }
-                    
-                    // Try to decode from video element
-                    const result = await codeReader.decodeFromVideoElement(video);
-                    
-                    if (result) {
-                        console.log('✅ BARCODE DETECTED!', result);
-                        handleBarcodeDetected(result);
-                    }
-                    
-                    // Log scanning attempts every 10 tries
-                    if (scanAttempts % 10 === 0) {
-                        console.log(`🔍 Scan attempts: ${scanAttempts} (still scanning...)`);
-                        updateStatus(`Scanning... ${scanAttempts} attempts`);
-                    }
-                    
-                } catch (error) {
-                    // Log ALL errors for debugging
-                    console.log(`⚠️ Scan ${scanAttempts} error:`, error.name, error.message);
-                    
-                    // If it's not the expected "not found" error, something is wrong
-                    if (error.name !== 'NotFoundException') {
-                        console.error('❌ Unexpected error in scan loop:', error);
-                        showError(`Scanner error: ${error.message}`);
-                    }
+                    console.log(`🔍 Scan attempts: ${scanAttempts} (still scanning...)`);
                 }
                 
-                // Small delay between scans to avoid blocking
-                await new Promise(resolve => setTimeout(resolve, CONFIG.FRAME_PROCESSING_INTERVAL));
-                
-                // Log every 10 iterations to confirm loop is running
-                if (scanAttempts % 10 === 0) {
-                    console.log(`✅ Loop iteration ${scanAttempts} complete, continuing...`);
+                if (result) {
+                    console.log('✅ BARCODE DETECTED!', result);
+                    handleBarcodeDetected(result);
+                    // Stop scanning after successful detection
+                    if (controls) controls.stop();
+                } else if (error && error.name !== 'NotFoundException') {
+                    // Log unexpected errors
+                    console.warn('⚠️ Decode error:', error.name, error.message);
                 }
             }
-            console.log('❌ Scan loop stopped (isScanning = false)');
-        }
+        );
         
-        // Start the continuous scanning loop
-        continuousScan();
+        console.log('✅ Continuous decoding started, controls:', controls);
         
-        // Store the scanning state so we can stop it later
-        window.stopScanning = () => { isScanning = false; };
+        // Store the controls so we can stop scanning later
+        window.stopScanning = () => {
+            if (controls && controls.stop) {
+                controls.stop();
+                console.log('🛑 Scanning stopped');
+            }
+        };
         
         console.log('✅ Barcode detection started successfully');
         
