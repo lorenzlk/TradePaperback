@@ -155,9 +155,10 @@ function startBarcodeDetection() {
                         // Draw current video frame to canvas
                         context.drawImage(video, 0, 0, canvas.width, canvas.height);
                         
-                        // Try to decode directly from canvas
+                        // Convert canvas to data URL and decode
                         try {
-                            const result = await codeReader.decodeFromCanvas(canvas);
+                            const imageUrl = canvas.toDataURL('image/png');
+                            const result = await codeReader.decodeFromImageUrl(imageUrl);
                             
                             if (result) {
                                 console.log('✅ BARCODE DETECTED!', result);
