@@ -133,7 +133,7 @@ function startBarcodeDetection() {
             console.log('🔄 Scan loop started');
             
             const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
+            const context = canvas.getContext('2d', { willReadFrequently: true });
             
             while (isScanning) {
                 try {
@@ -155,12 +155,9 @@ function startBarcodeDetection() {
                         // Draw current video frame to canvas
                         context.drawImage(video, 0, 0, canvas.width, canvas.height);
                         
-                        // Get image data
-                        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                        
-                        // Try to decode
+                        // Try to decode directly from canvas
                         try {
-                            const result = await codeReader.decodeFromImageData(imageData);
+                            const result = await codeReader.decodeFromCanvas(canvas);
                             
                             if (result) {
                                 console.log('✅ BARCODE DETECTED!', result);
@@ -170,7 +167,7 @@ function startBarcodeDetection() {
                         } catch (decodeError) {
                             // NotFoundException is normal - no barcode in frame
                             if (decodeError.name !== 'NotFoundException' && CONFIG.DEBUG_MODE && scanAttempts % 50 === 0) {
-                                console.warn('Decode error:', decodeError.name);
+                                console.warn('Decode error:', decodeError.name, decodeError.message);
                             }
                         }
                         
