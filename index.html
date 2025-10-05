@@ -84,6 +84,20 @@
     </div>
 
     <!-- Scripts -->
+    <script>
+        // Check if ZXing loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const statusEl = document.getElementById('instruction-text');
+                if (typeof ZXing === 'undefined') {
+                    if (statusEl) statusEl.textContent = '❌ ZXing library failed to load!';
+                    console.error('ZXing library not loaded');
+                } else {
+                    console.log('✅ ZXing loaded:', ZXing);
+                }
+            }, 1000);
+        });
+    </script>
     <script src="https://unpkg.com/@zxing/library@latest"></script>
     <script src="config.js"></script>
     <script src="scanner.js"></script>

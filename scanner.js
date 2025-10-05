@@ -85,14 +85,20 @@ async function initializeScanner() {
 // Start barcode detection using ZXing
 function startBarcodeDetection() {
     try {
-        // Initialize BrowserMultiFormatReader (supports UPC-A, UPC-E, EAN-13, etc.)
-        codeReader = new ZXing.BrowserMultiFormatReader();
+        // Check if ZXing is loaded
+        if (typeof ZXing === 'undefined') {
+            console.error('❌ ZXing is not defined!');
+            showError('Barcode library failed to load. Check your internet connection.');
+            updateStatus('❌ Library not loaded');
+            return;
+        }
         
         if (CONFIG.DEBUG_MODE) {
             console.log('🔍 Starting barcode detection...');
             console.log('📹 Video element:', video);
             console.log('📹 Video ready state:', video.readyState);
             console.log('📹 Video dimensions:', video.videoWidth, 'x', video.videoHeight);
+            console.log('✅ ZXing available:', typeof ZXing);
         }
         
         // Add a scan counter for debugging
@@ -113,11 +119,16 @@ function startBarcodeDetection() {
         
         codeReader = new ZXing.BrowserMultiFormatReader(hints);
         
+        console.log('✅ BrowserMultiFormatReader created:', codeReader);
+        
         // Set decoding delay for better accuracy with small barcodes
         codeReader.timeBetweenDecodingAttempts = 100; // Faster attempts
         
+        console.log('🎬 Starting decodeFromVideoElement...');
+        
         // Start continuous decoding
-        codeReader.decodeFromVideoElement(video, (result, error) => {
+        const controlId = codeReader.decodeFromVideoElement(video, (result, error) => {
+            console.log('📞 Scanner callback called!', { result, error });  // This should fire immediately
             scanAttempts++;
             
             // Update debug display every 10 attempts
@@ -149,14 +160,18 @@ function startBarcodeDetection() {
             }
         });
         
-        if (CONFIG.DEBUG_MODE) {
-            console.log('✅ Barcode detection started successfully');
-        }
+        console.log('✅ Barcode detection started successfully');
+        console.log('🎮 Control ID:', controlId);
         
         // Visual feedback that scanning is active
         setTimeout(() => {
-            updateStatus(`Scanner active (${scanAttempts} scans)`);
-        }, 2000);
+            const debugEl = document.getElementById('scanner-debug');
+            if (debugEl && scanAttempts === 0) {
+                debugEl.textContent = '⚠️ Scanner initialized but not scanning!';
+                debugEl.style.color = '#ff0';
+                console.warn('⚠️ Scanner callback never called - possible ZXing issue');
+            }
+        }, 3000);
         
     } catch (error) {
         console.error('❌ Failed to start barcode detection:', error);
