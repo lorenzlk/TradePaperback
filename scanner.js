@@ -128,7 +128,8 @@ function startBarcodeDetection() {
         
         // Use ZXing's built-in continuous decoding
         // This handles its own loop internally - we just pass a callback
-        const controls = await codeReader.decodeFromVideoElement(
+        // DON'T await this - it runs continuously
+        codeReader.decodeFromVideoElement(
             video,
             (result, error, controls) => {
                 scanAttempts++;
@@ -145,8 +146,6 @@ function startBarcodeDetection() {
                 if (result) {
                     console.log('✅ BARCODE DETECTED!', result);
                     handleBarcodeDetected(result);
-                    // Stop scanning after successful detection
-                    if (controls) controls.stop();
                 } else if (error && error.name !== 'NotFoundException') {
                     // Log unexpected errors
                     console.warn('⚠️ Decode error:', error.name, error.message);
@@ -154,15 +153,7 @@ function startBarcodeDetection() {
             }
         );
         
-        console.log('✅ Continuous decoding started, controls:', controls);
-        
-        // Store the controls so we can stop scanning later
-        window.stopScanning = () => {
-            if (controls && controls.stop) {
-                controls.stop();
-                console.log('🛑 Scanning stopped');
-            }
-        };
+        console.log('✅ Continuous decoding started');
         
         console.log('✅ Barcode detection started successfully');
         
