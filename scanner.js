@@ -124,36 +124,84 @@ function startBarcodeDetection() {
         // Set decoding delay for better accuracy with small barcodes
         codeReader.timeBetweenDecodingAttempts = 100; // Faster attempts
         
-        console.log('🎬 Starting continuous decode with ZXing built-in loop...');
+        console.log('🎬 Starting continuous decode using manual frame capture...');
         
-        // Use ZXing's built-in continuous decoding
-        // This handles its own loop internally - we just pass a callback
-        // DON'T await this - it runs continuously
-        codeReader.decodeFromVideoElement(
-            video,
-            (result, error, controls) => {
-                scanAttempts++;
-                
-                // Update debug display every 10 attempts
-                if (scanAttempts % 10 === 0) {
-                    const debugEl = document.getElementById('scanner-debug');
-                    if (debugEl) {
-                        debugEl.textContent = `🔍 Attempts: ${scanAttempts}`;
+        // Manual scanning loop - grab frames and decode them
+        let isScanning = true;
+        
+        async function scanLoop() {
+            console.log('🔄 Scan loop started');
+            
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            while (isScanning) {
+                try {
+                    // Make sure video is ready
+                    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                        scanAttempts++;
+                        
+                        // Update debug display
+                        const debugEl = document.getElementById('scanner-debug');
+                        if (debugEl && scanAttempts % 10 === 0) {
+                            debugEl.textContent = `🔍 Attempts: ${scanAttempts}`;
+                            debugEl.style.color = '#0f0';
+                        }
+                        
+                        // Set canvas to video size
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        
+                        // Draw current video frame to canvas
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        
+                        // Get image data
+                        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                        
+                        // Try to decode
+                        try {
+                            const result = await codeReader.decodeFromImageData(imageData);
+                            
+                            if (result) {
+                                console.log('✅ BARCODE DETECTED!', result);
+                                isScanning = false; // Stop scanning
+                                handleBarcodeDetected(result);
+                            }
+                        } catch (decodeError) {
+                            // NotFoundException is normal - no barcode in frame
+                            if (decodeError.name !== 'NotFoundException' && CONFIG.DEBUG_MODE && scanAttempts % 50 === 0) {
+                                console.warn('Decode error:', decodeError.name);
+                            }
+                        }
+                        
+                        // Log progress
+                        if (CONFIG.DEBUG_MODE && scanAttempts % 50 === 0) {
+                            console.log(`🔍 Scanning... ${scanAttempts} attempts`);
+                        }
                     }
-                    console.log(`🔍 Scan attempts: ${scanAttempts} (still scanning...)`);
-                }
-                
-                if (result) {
-                    console.log('✅ BARCODE DETECTED!', result);
-                    handleBarcodeDetected(result);
-                } else if (error && error.name !== 'NotFoundException') {
-                    // Log unexpected errors
-                    console.warn('⚠️ Decode error:', error.name, error.message);
+                    
+                    // Wait before next scan
+                    await new Promise(resolve => setTimeout(resolve, CONFIG.FRAME_PROCESSING_INTERVAL));
+                    
+                } catch (error) {
+                    console.error('❌ Scan loop error:', error);
+                    break;
                 }
             }
-        );
+            
+            console.log('🛑 Scan loop ended');
+        }
         
-        console.log('✅ Continuous decoding started');
+        // Start the scanning loop
+        scanLoop();
+        
+        // Store stop function
+        window.stopScanning = () => { 
+            isScanning = false;
+            console.log('🛑 Stopping scanner');
+        };
+        
+        console.log('✅ Manual scan loop initiated');
         
         console.log('✅ Barcode detection started successfully');
         
