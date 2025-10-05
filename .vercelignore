@@ -1,0 +1,14 @@
+# Vercel ignore file
+# Exclude unnecessary files from deployment
+
+memory-bank/
+pipedream-setup.md
+google-sheets-setup.md
+railway-deployment.md
+test-webhook.html
+.git/
+.gitignore
+server.js
+package.json
+.railwayignore
+

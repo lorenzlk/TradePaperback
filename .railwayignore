@@ -1,0 +1,12 @@
+# Railway ignore file
+# Exclude unnecessary files from deployment
+
+memory-bank/
+*.md
+!README.md
+test-webhook.html
+pipedream-setup.md
+google-sheets-setup.md
+.git/
+.gitignore
+

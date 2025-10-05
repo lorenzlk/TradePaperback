@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>UPC Scanner</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Loading State -->
+    <div id="loading" class="loading">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Initializing camera...</p>
+        </div>
+    </div>
+
+    <!-- Camera Permission Denied -->
+    <div id="permission-denied" class="error-screen hidden">
+        <div class="error-content">
+            <div class="error-icon">📷</div>
+            <h2>Camera Access Required</h2>
+            <p>Please allow camera access to scan barcodes</p>
+            <button onclick="location.reload()" class="retry-btn">Try Again</button>
+        </div>
+    </div>
+
+    <!-- Main Scanner Interface -->
+    <div id="scanner-container" class="scanner-container hidden">
+        <!-- Video Element for Camera Feed -->
+        <video id="video" playsinline autoplay></video>
+        
+        <!-- Scanning Overlay -->
+        <div class="scanner-overlay">
+            <!-- Scanning Frame -->
+            <div class="scan-region">
+                <div class="scan-frame">
+                    <div class="corner corner-tl"></div>
+                    <div class="corner corner-tr"></div>
+                    <div class="corner corner-bl"></div>
+                    <div class="corner corner-br"></div>
+                </div>
+                <div class="scan-line"></div>
+            </div>
+            
+            <!-- Instructions -->
+            <div class="instructions">
+                <p>Position barcode within frame</p>
+            </div>
+        </div>
+
+        <!-- Success Feedback -->
+        <div id="success-feedback" class="success-feedback hidden">
+            <div class="success-icon">✓</div>
+            <div class="success-text">Scanned!</div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div id="status-text" class="status-text">Ready to scan</div>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div id="error-message" class="error-message hidden">
+        <p id="error-text"></p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
+    <script src="config.js"></script>
+    <script src="scanner.js"></script>
+</body>
+</html>
+
