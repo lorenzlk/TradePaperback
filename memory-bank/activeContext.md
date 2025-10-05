@@ -1,9 +1,9 @@
 # Active Context
 
 ## Current Work Focus
-**Status:** Deployment & Testing - Ready for Mobile Testing
+**Status:** ✅ Scanner Working! Now Adding Sheet2 Metadata Enrichment
 
-**Current Phase:** Deploy and test on actual devices
+**Current Phase:** Building LLM-powered metadata enrichment pipeline
 
 **Next Immediate Steps:**
 1. ✅ Complete Memory Bank documentation setup
@@ -11,27 +11,27 @@
 3. ✅ Test webhook successfully (200 OK)
 4. ✅ Complete Google Sheets integration in Pipedream
 5. ✅ Build frontend scanner app
-6. 🔄 Deploy to Vercel (NEXT STEP - User's Choice)
-   - Push to GitHub
-   - Connect Vercel to repository
-   - Deploy with one click
-   - Get live URL
-7. Test on actual mobile devices (iOS & Android)
-8. Verify end-to-end flow (scan → webhook → sheet)
+6. ✅ Deploy to Vercel (LIVE!)
+7. ✅ Fix barcode detection (working with manual frame capture)
+8. ✅ Scanner fully functional (tested and verified)
+9. 🔄 Set up Sheet2 for metadata enrichment (IN PROGRESS)
+   - Create Sheet2 with metadata columns
+   - Build Pipedream workflow for auto-enrichment
+   - Use GPT-4 to search and format metadata
+   - Test with scanned UPCs
 
-## Recent Changes (Last Session)
-- ✅ Created Memory Bank structure (6 core files)
-- ✅ Documented project requirements from PRD (prd.md)
-- ✅ Defined system architecture and patterns
-- ✅ Established technical stack and constraints
-- ✅ Created comprehensive Pipedream setup guide (pipedream-setup.md)
-- ✅ Built interactive webhook testing tool (test-webhook.html)
-- ✅ Configured Pipedream webhook (https://eo76brlwpbpr9el.m.pipedream.net)
-- ✅ Successfully tested webhook endpoint (200 OK response verified)
-- ✅ Created Google Sheet "Trade Paperback DB"
-- ✅ Documented Google Sheets integration process (google-sheets-setup.md)
-- ✅ Saved all configuration to config.js (webhook URL, sheet ID)
-- ✅ Updated Memory Bank across all files
+## Recent Changes (This Session)
+- ✅ Fixed ZXing barcode scanner after extensive debugging
+- ✅ Implemented manual frame capture loop (more reliable than callback API)
+- ✅ Scanner now successfully detects barcodes on mobile
+- ✅ Manual entry fallback working perfectly
+- ✅ Deployed multiple fixes to Vercel
+- ✅ Verified end-to-end flow: scan → detect → webhook → Sheet1
+- 🆕 Designed Sheet2 metadata enrichment system
+- 🆕 Created comprehensive metadata column structure (16 fields)
+- 🆕 Documented LLM enrichment workflow (sheet2-metadata-setup.md)
+- 🆕 Built Pipedream workflow guide for auto-enrichment (pipedream-enrichment-setup.md)
+- 🆕 Created Sheet2 CSV header template
 
 ## Active Decisions & Considerations
 
@@ -52,17 +52,21 @@
 - ✅ **Pipedream webhook URL:** https://eo76brlwpbpr9el.m.pipedream.net
 - ✅ **Data destination:** Google Sheets
 - ✅ **Google Sheet:** Trade Paperback DB (ID: 1NIbYNYHdnuksYUDfPUQMExmPTpETvmqlu8WZVr4F_ck)
-- ✅ **Sheet columns defined:** UPC, Timestamp, Device, Browser, Latitude, Longitude, Session ID
-- ✅ **Hosting platform:** Vercel (user's choice)
+- ✅ **Sheet1 columns:** UPC, Timestamp, Device, Browser, Latitude, Longitude, Session ID
+- ✅ **Sheet2 columns (16):** UPC, Timestamp, Title, Publisher, Release_Date, Format, Series, Volume_Issue, Page_Count, ISBN, Price_USD, Genre, Description, Cover_Image_URL, Goodreads_Rating, Data_Source
+- ✅ **Hosting platform:** Vercel (deployed at trade-paperback.vercel.app)
+- ✅ **Scanner implementation:** Manual frame capture loop (most reliable)
+- ✅ **LLM for enrichment:** GPT-4o with OpenLibrary + Google Books APIs
 
 ### Current Status
-- ✅ Webhook tested successfully (200 OK)
-- ✅ Pipedream receiving data correctly
-- ✅ Google Sheets integration complete
-- ✅ End-to-end backend tested (webhook → Pipedream → Sheet)
-- ✅ Frontend scanner app built (index.html, scanner.js, styles.css)
-- ✅ All core features implemented
-- 🔄 Ready for deployment and mobile testing
+- ✅ **Scanner WORKING!** Fully functional on mobile
+- ✅ Barcode detection confirmed with manual frame capture
+- ✅ Manual entry fallback available for difficult barcodes
+- ✅ End-to-end flow verified (scan → webhook → Sheet1)
+- ✅ Deployed to Vercel (trade-paperback.vercel.app)
+- ✅ All Phase 1 features complete and tested
+- 🔄 **Phase 2 in progress:** Sheet2 metadata enrichment with LLM
+- 📝 Documentation ready for Pipedream enrichment workflow setup
 
 ### Technical Considerations
 - **Camera initialization timing** - iOS Safari may need user gesture
