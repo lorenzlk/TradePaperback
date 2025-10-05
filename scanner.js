@@ -130,16 +130,19 @@ function startBarcodeDetection() {
         let isScanning = true;
         
         async function continuousScan() {
+            console.log('🔄 Starting continuous scan loop...');
             while (isScanning) {
                 try {
                     scanAttempts++;
                     
-                    // Update debug display every 10 attempts
-                    if (scanAttempts % 10 === 0) {
-                        const debugEl = document.getElementById('scanner-debug');
-                        if (debugEl) {
-                            debugEl.textContent = `🔍 Attempts: ${scanAttempts}`;
-                        }
+                    // Update debug display on every attempt (not just every 10)
+                    const debugEl = document.getElementById('scanner-debug');
+                    if (debugEl) {
+                        debugEl.textContent = `🔍 Attempts: ${scanAttempts}`;
+                    }
+                    
+                    if (scanAttempts === 1) {
+                        console.log('🎯 First scan attempt...');
                     }
                     
                     // Try to decode from video element
@@ -150,24 +153,32 @@ function startBarcodeDetection() {
                         handleBarcodeDetected(result);
                     }
                     
-                    // Log scanning attempts every 50 tries
-                    if (CONFIG.DEBUG_MODE && scanAttempts % 50 === 0) {
+                    // Log scanning attempts every 10 tries
+                    if (scanAttempts % 10 === 0) {
                         console.log(`🔍 Scan attempts: ${scanAttempts} (still scanning...)`);
                         updateStatus(`Scanning... ${scanAttempts} attempts`);
                     }
                     
                 } catch (error) {
-                    // NotFoundException is expected when no barcode in frame
+                    // Log ALL errors for debugging
+                    console.log(`⚠️ Scan ${scanAttempts} error:`, error.name, error.message);
+                    
+                    // If it's not the expected "not found" error, something is wrong
                     if (error.name !== 'NotFoundException') {
-                        if (CONFIG.DEBUG_MODE) {
-                            console.warn('⚠️ Decode error:', error.name, error.message);
-                        }
+                        console.error('❌ Unexpected error in scan loop:', error);
+                        showError(`Scanner error: ${error.message}`);
                     }
                 }
                 
                 // Small delay between scans to avoid blocking
                 await new Promise(resolve => setTimeout(resolve, CONFIG.FRAME_PROCESSING_INTERVAL));
+                
+                // Log every 10 iterations to confirm loop is running
+                if (scanAttempts % 10 === 0) {
+                    console.log(`✅ Loop iteration ${scanAttempts} complete, continuing...`);
+                }
             }
+            console.log('❌ Scan loop stopped (isScanning = false)');
         }
         
         // Start the continuous scanning loop
