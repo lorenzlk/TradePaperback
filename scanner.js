@@ -21,6 +21,11 @@ const manualEntryModal = document.getElementById('manual-entry-modal');
 const manualUpcInput = document.getElementById('manual-upc-input');
 const manualSubmitBtn = document.getElementById('manual-submit-btn');
 const manualCancelBtn = document.getElementById('manual-cancel-btn');
+const metadataCard = document.getElementById('metadata-card');
+const metadataClose = document.getElementById('metadata-close');
+const metadataUpc = document.getElementById('metadata-upc');
+const metadataFormat = document.getElementById('metadata-format');
+const metadataTime = document.getElementById('metadata-time');
 
 // Initialize scanner on page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -259,6 +264,9 @@ function handleBarcodeDetected(result) {
     // Show success feedback
     showSuccessFeedback();
     
+    // Show metadata confirmation card
+    showMetadataCard(code, format);
+    
     // Vibrate if supported
     if (CONFIG.ENABLE_HAPTIC_FEEDBACK && navigator.vibrate) {
         navigator.vibrate(200);
@@ -292,6 +300,37 @@ function showSuccessFeedback() {
     setTimeout(() => {
         successFeedback.classList.add('hidden');
     }, 1000);
+}
+
+// Show metadata confirmation card
+function showMetadataCard(upc, format) {
+    // Populate card with scan data
+    metadataUpc.textContent = upc;
+    metadataFormat.textContent = format;
+    
+    // Format timestamp
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    metadataTime.textContent = timeStr;
+    
+    // Show the card
+    metadataCard.classList.remove('hidden');
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        if (!metadataCard.classList.contains('hidden')) {
+            hideMetadataCard();
+        }
+    }, 5000);
+}
+
+// Hide metadata confirmation card
+function hideMetadataCard() {
+    metadataCard.classList.add('hidden');
 }
 
 // Send scan data to webhook
@@ -525,6 +564,13 @@ if (manualUpcInput) {
         if (e.key === 'Enter') {
             manualSubmitBtn.click();
         }
+    });
+}
+
+// Close metadata card button
+if (metadataClose) {
+    metadataClose.addEventListener('click', () => {
+        hideMetadataCard();
     });
 }
 

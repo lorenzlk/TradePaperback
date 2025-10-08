@@ -11,12 +11,17 @@
 ### Backend Stack
 - **Pipedream** - Webhook receiver and data pipeline orchestration
 - **HTTPS** - Secure data transmission protocol
+- **OpenAI GPT-4o** - LLM for metadata enrichment and formatting
+- **OpenLibrary API** - Free book/comic metadata source
+- **Google Books API** - Additional metadata source with cover images
 
 ### Data Storage (Selected)
 - **Google Sheets** - ✅ CHOSEN - Simple spreadsheet logging
   - Sheet: "Trade Paperback DB"
   - ID: 1NIbYNYHdnuksYUDfPUQMExmPTpETvmqlu8WZVr4F_ck
   - URL: https://docs.google.com/spreadsheets/d/1NIbYNYHdnuksYUDfPUQMExmPTpETvmqlu8WZVr4F_ck/edit
+  - **Sheet1**: Raw scan data (UPC, timestamp, device, location)
+  - **Sheet2**: Enriched metadata (title, publisher, format, etc. - 16 columns)
   
 ### Alternative Data Storage Options (Not Chosen)
 - **Airtable** - Structured database with API (future option)
@@ -179,12 +184,36 @@ navigator.mediaDevices.getUserMedia({
 - ✅ Custom domain support
 
 ### Pipedream Webhook Setup
+
+#### Workflow 1: Raw Scan Collection (Sheet1)
 1. ✅ Create new workflow in Pipedream (DONE)
 2. ✅ Add HTTP trigger (DONE - URL generated)
-3. 🔄 Add destination step (Google Sheets - IN PROGRESS)
+3. ✅ Add destination step (Google Sheets - DONE)
 4. ✅ Copy webhook URL to frontend config (DONE)
+5. ✅ Test end-to-end data flow (WORKING)
 
 **Actual Webhook URL:** https://eo76brlwpbpr9el.m.pipedream.net
+
+#### Workflow 2: Metadata Enrichment (Sheet2) 
+**Status:** 📝 Documented, ready for implementation
+
+**Architecture:**
+1. Trigger: New Row in Sheet1
+2. Search OpenLibrary API for book/comic data
+3. Search Google Books API for additional metadata
+4. GPT-4 enrichment: parse, format, and fill gaps
+5. Write structured metadata to Sheet2
+
+**APIs Used:**
+- **OpenLibrary API** - `https://openlibrary.org/isbn/{upc}.json`
+- **Google Books API** - `https://www.googleapis.com/books/v1/volumes?q=isbn:{upc}`
+- **OpenAI API** - GPT-4o model for metadata enrichment
+
+**Output Format:** 16-column structured metadata
+- UPC, Timestamp, Title, Publisher, Release_Date
+- Format, Series, Volume_Issue, Page_Count
+- ISBN, Price_USD, Genre, Description
+- Cover_Image_URL, Goodreads_Rating, Data_Source
 
 ### Environment Variables
 ```javascript

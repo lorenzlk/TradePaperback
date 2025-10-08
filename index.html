@@ -58,6 +58,46 @@
             <div class="success-text">Scanned!</div>
         </div>
 
+        <!-- Metadata Confirmation Card -->
+        <div id="metadata-card" class="metadata-card hidden">
+            <div class="metadata-header">
+                <span class="metadata-title">📦 Scan Confirmed</span>
+                <button id="metadata-close" class="metadata-close">✕</button>
+            </div>
+            <div class="metadata-body">
+                <div class="metadata-row">
+                    <span class="metadata-label">UPC:</span>
+                    <span id="metadata-upc" class="metadata-value">-</span>
+                </div>
+                <div class="metadata-row">
+                    <span class="metadata-label">Format:</span>
+                    <span id="metadata-format" class="metadata-value">-</span>
+                </div>
+                <div class="metadata-row">
+                    <span class="metadata-label">Time:</span>
+                    <span id="metadata-time" class="metadata-value">-</span>
+                </div>
+                <div id="metadata-enriched" class="metadata-enriched hidden">
+                    <div class="metadata-divider"></div>
+                    <div class="metadata-row">
+                        <span class="metadata-label">Title:</span>
+                        <span id="metadata-title-value" class="metadata-value metadata-highlight">-</span>
+                    </div>
+                    <div class="metadata-row">
+                        <span class="metadata-label">Publisher:</span>
+                        <span id="metadata-publisher" class="metadata-value">-</span>
+                    </div>
+                    <div class="metadata-row">
+                        <span class="metadata-label">Format:</span>
+                        <span id="metadata-product-format" class="metadata-value">-</span>
+                    </div>
+                </div>
+                <div class="metadata-status">
+                    <span id="metadata-status-text">✓ Saved to database</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Status Bar -->
         <div class="status-bar">
             <div id="status-text" class="status-text">Ready to scan</div>

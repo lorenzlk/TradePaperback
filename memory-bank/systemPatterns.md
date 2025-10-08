@@ -12,14 +12,39 @@
          │ (JSON payload)
          ▼
 ┌─────────────────┐
-│    Pipedream    │
-│    Webhook      │
+│  Pipedream WF1  │
+│  Raw Scan Data  │
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│  Data Storage   │
-│ (Sheets/DB)     │
+│  Google Sheets  │
+│     Sheet1      │ ◄───┐
+└────────┬────────┘     │
+         │              │
+         │ Trigger      │
+         ▼              │
+┌─────────────────┐     │
+│  Pipedream WF2  │     │
+│   Enrichment    │     │
+└────────┬────────┘     │
+         │              │
+         ├──────────────┘
+         │ Search APIs
+         ├──► OpenLibrary
+         ├──► Google Books
+         │
+         │ Enrich
+         ▼
+    ┌─────────┐
+    │ GPT-4o  │
+    └────┬────┘
+         │
+         ▼
+┌─────────────────┐
+│  Google Sheets  │
+│     Sheet2      │
+│  (Metadata)     │
 └─────────────────┘
 ```
 
@@ -47,15 +72,28 @@
    - Manages loading indicators
 
 #### Backend Components
-1. **Webhook Receiver (Pipedream)**
-   - Receives POST requests
+1. **Webhook Receiver (Pipedream WF1)**
+   - Receives POST requests from scanner
    - Validates payload structure
    - Logs incoming data
+   - Writes to Sheet1 (raw scan data)
 
-2. **Data Pipeline**
-   - Forwards to storage (Google Sheets, Airtable, Supabase)
-   - Handles data transformation if needed
-   - Provides logging/monitoring
+2. **Metadata Enrichment Pipeline (Pipedream WF2)**
+   - Triggered by new rows in Sheet1
+   - Searches OpenLibrary API for book/comic data
+   - Searches Google Books API for additional metadata
+   - Sends combined data to GPT-4 for enrichment
+   - Parses and structures GPT-4 response
+   - Writes enriched metadata to Sheet2
+
+3. **External APIs**
+   - **OpenLibrary** - Free book/comic metadata
+   - **Google Books** - Additional metadata + cover images
+   - **OpenAI GPT-4o** - Intelligent metadata enrichment and formatting
+
+4. **Data Storage**
+   - **Sheet1** - Raw scan logs (7 columns)
+   - **Sheet2** - Enriched metadata (16 columns)
 
 ## Key Technical Decisions
 
@@ -104,6 +142,24 @@
 **Future Consideration:**
 - Add API key or token for production scale
 - Implement rate limiting
+
+### Decision 5: GPT-4o for Metadata Enrichment
+**Rationale:**
+- Can intelligently combine multiple API sources
+- Handles missing or incomplete data gracefully
+- Formats output consistently (structured JSON)
+- Cost-effective at ~$0.01-0.03 per enrichment
+- Better than manual data entry
+
+**Trade-offs:**
+- API costs (mitigated by low volume)
+- Potential for hallucination (verify critical data)
+- Network dependency
+
+**Alternatives Considered:**
+- Manual data entry (too slow)
+- Simple API passthrough (too brittle, inconsistent formats)
+- Custom ML model (overkill for volume)
 
 ## Design Patterns in Use
 

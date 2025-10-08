@@ -49,15 +49,22 @@ Visual confirmation → Ready for next scan (< 5 seconds total)
 ### Step 4: Capture
 - UPC detected → Screen flashes or shows confirmation
 - Haptic feedback (if supported)
-- Brief success message
+- **Display scanned metadata on screen for user confirmation**
 
-### Step 5: Transmission
+### Step 5: Metadata Display
+- **Show what was just scanned** (UPC, title, publisher, format)
+- Stay on screen for 3-5 seconds or until user dismisses
+- Provides confidence that correct item was scanned
+- Visual confirmation before moving to next scan
+
+### Step 6: Transmission
 - Data automatically sent to backend endpoint
-- No user action required
+- Enrichment happens in background (Pipedream → Sheet2)
 - Silent operation (user doesn't see technical details)
 
-### Step 6: Reset
+### Step 7: Reset
 - "Ready for next scan" state appears
+- Metadata card disappears (or minimizes)
 - Camera remains active
 - User can immediately scan next item
 
@@ -76,23 +83,31 @@ Visual confirmation → Ready for next scan (< 5 seconds total)
 - Responsive feedback (no guessing if it worked)
 
 ### Emotional Goals
-- **Confidence** - User trusts the scan was captured
+- **Confidence** - User trusts the scan was captured AND knows what was scanned
+- **Verification** - User can confirm correct item before next scan
 - **Speed** - Feels fast and efficient
 - **Simplicity** - No cognitive load
 - **Reliability** - Works consistently every time
 
-## Non-Goals (Out of Scope)
+## Non-Goals (Out of Scope - Phase 1)
 - User authentication/accounts
 - Historical scan review in the app
 - Barcode editing or correction
-- Product information lookup
 - Multi-barcode scanning (batch mode)
-- QR code or other barcode formats (Phase 1)
+- QR code or other barcode formats
+
+## Phase 2 Goals (In Progress)
+- ✅ Product information lookup via APIs (OpenLibrary, Google Books)
+- ✅ LLM-powered metadata enrichment (GPT-4)
+- 🔄 **On-screen metadata display after each scan** (NEW REQUIREMENT)
+- ⏳ Integration with Sheet2 enriched data
 
 ## Future Considerations
 - **Offline Mode** - Queue scans offline, sync on reconnect
 - **PWA Support** - "Add to Home Screen" functionality
 - **Scan History** - View recent scans in-app
-- **Product Enrichment** - Display product info after scan
+- ~~**Product Enrichment** - Display product info after scan~~ ✅ **NOW IN PHASE 2**
 - **Advanced Analytics** - Dashboard for scan patterns
+- **Real-time metadata** - Fetch enriched data from Sheet2 and display immediately
+- **Edit/Correct** - Allow users to fix incorrect metadata before finalizing
 
