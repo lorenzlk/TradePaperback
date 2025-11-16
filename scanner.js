@@ -45,6 +45,18 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('📝 Config:', CONFIG);
     }
     
+    // Check Vision API configuration
+    const isVisionConfigured = CONFIG.VISION_API_URL && 
+        !CONFIG.VISION_API_URL.includes('your-pipedream') && 
+        !CONFIG.VISION_API_URL.includes('your-vision-webhook-url') &&
+        !CONFIG.VISION_API_URL.includes('your-webhook-url');
+    
+    if (!isVisionConfigured) {
+        console.warn('⚠️ Vision API not configured. Cover scanning will be disabled.');
+        console.warn('📖 To enable cover scanning, set VISION_API_URL in config.js');
+        console.warn('📚 See PIPEDREAM-VISION-WORKFLOW.md for setup instructions');
+    }
+    
     // Generate session ID for this browser session
     sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     if (CONFIG.DEBUG_MODE) {
@@ -728,7 +740,24 @@ if (metadataClose) {
 
 // Cover scan button
 if (coverScanBtn) {
+    // Check if Vision API is configured and update button state
+    const isVisionConfigured = CONFIG.VISION_API_URL && 
+        !CONFIG.VISION_API_URL.includes('your-pipedream') && 
+        !CONFIG.VISION_API_URL.includes('your-vision-webhook-url') &&
+        !CONFIG.VISION_API_URL.includes('your-webhook-url');
+    
+    if (!isVisionConfigured) {
+        coverScanBtn.disabled = true;
+        coverScanBtn.title = 'Vision API not configured. Set VISION_API_URL in config.js';
+        coverScanBtn.style.opacity = '0.6';
+        coverScanBtn.style.cursor = 'not-allowed';
+    }
+    
     coverScanBtn.addEventListener('click', () => {
+        if (!isVisionConfigured) {
+            showError('Vision API not configured. Please set VISION_API_URL in config.js. See PIPEDREAM-VISION-WORKFLOW.md for setup instructions.');
+            return;
+        }
         captureAndIdentifyCover();
     });
 }
@@ -784,8 +813,11 @@ async function captureAndIdentifyCover() {
 // Call backend API to identify book from cover
 async function identifyBookCover(imageBase64) {
     // Check if endpoint is configured
-    if (!CONFIG.VISION_API_URL || CONFIG.VISION_API_URL.includes('your-pipedream')) {
-        throw new Error('Vision API endpoint not configured. See PIPEDREAM-VISION-WORKFLOW.md');
+    if (!CONFIG.VISION_API_URL || 
+        CONFIG.VISION_API_URL.includes('your-pipedream') || 
+        CONFIG.VISION_API_URL.includes('your-vision-webhook-url') ||
+        CONFIG.VISION_API_URL.includes('your-webhook-url')) {
+        throw new Error('Vision API endpoint not configured. Please set VISION_API_URL in config.js with your Pipedream webhook URL. See PIPEDREAM-VISION-WORKFLOW.md for setup instructions.');
     }
     
     try {

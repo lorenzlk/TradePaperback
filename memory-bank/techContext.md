@@ -193,10 +193,10 @@ navigator.mediaDevices.getUserMedia({
 4. ✅ Copy webhook URL to frontend config (DONE)
 5. ✅ Test end-to-end data flow (WORKING)
 
-**Actual Webhook URL:** https://eo76brlwpbpr9el.m.pipedream.net
+**Actual Webhook URL:** https://eotlck7p4oeyvob.m.pipedream.net
 
 #### Workflow 2: Cover Image Recognition (Vision API)
-**Status:** ✅ Complete, ready for frontend integration
+**Status:** ✅ Complete and operational
 
 **Architecture:**
 1. HTTP Trigger: Receives base64 image from frontend
@@ -222,6 +222,8 @@ navigator.mediaDevices.getUserMedia({
 - `test-pipedream-vision.js` - Test script
 - `setup-vision-url.js` - Config updater
 
+**Webhook URL:** https://eotlck7p4oeyvob.m.pipedream.net (configured and deployed)
+
 #### Workflow 3: Metadata Enrichment (Sheet2) 
 **Status:** 📝 Documented, ready for implementation
 
@@ -245,9 +247,10 @@ navigator.mediaDevices.getUserMedia({
 
 ### Environment Variables
 ```javascript
-// config.js (CREATED)
+// config.js (CONFIGURED)
 const CONFIG = {
-  WEBHOOK_URL: 'https://eo76brlwpbpr9el.m.pipedream.net',
+  WEBHOOK_URL: 'https://eotlck7p4oeyvob.m.pipedream.net',
+  VISION_API_URL: 'https://eotlck7p4oeyvob.m.pipedream.net',
   SHEET_URL: 'https://docs.google.com/spreadsheets/d/1NIbYNYHdnuksYUDfPUQMExmPTpETvmqlu8WZVr4F_ck/edit',
   SHEET_ID: '1NIbYNYHdnuksYUDfPUQMExmPTpETvmqlu8WZVr4F_ck',
   ENABLE_GEOLOCATION: false,

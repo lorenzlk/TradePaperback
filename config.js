@@ -4,12 +4,12 @@
 const CONFIG = {
   // Pipedream webhook endpoint
   // Replace with your Pipedream webhook URL
-  WEBHOOK_URL: 'https://your-webhook-url.m.pipedream.net',
+  WEBHOOK_URL: 'https://eotlck7p4oeyvob.m.pipedream.net',
   
   // Google Sheet for data storage
   // Replace with your Google Sheet URL and ID
-  SHEET_URL: 'https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit',
-  SHEET_ID: 'YOUR_SHEET_ID',
+  SHEET_URL: 'https://docs.google.com/spreadsheets/d/1NIbYNYHdnuksYUDfPUQMExmPTpETvmqlu8WZVr4F_ck/edit',
+  SHEET_ID: '1NIbYNYHdnuksYUDfPUQMExmPTpETvmqlu8WZVr4F_ck',
   
   // Feature flags
   ENABLE_GEOLOCATION: false, // Set to true to collect location data
@@ -33,9 +33,10 @@ const CONFIG = {
   // Note: google-cloud-key.json should be in .gitignore
   GOOGLE_CLOUD_KEY_FILE: './google-cloud-key.json',
   GOOGLE_CLOUD_PROJECT_ID: 'your-project-id',
+  
   // Pipedream Vision API webhook URL
-  // Replace with your Vision API workflow webhook URL
-  VISION_API_URL: 'https://your-vision-webhook-url.m.pipedream.net',
+  // Vision API workflow for cover image recognition
+  VISION_API_URL: 'https://eotlck7p4oeyvob.m.pipedream.net',
 };
 
 // Export for use in scanner.js

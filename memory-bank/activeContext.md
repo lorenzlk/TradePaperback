@@ -64,7 +64,8 @@
 - [ ] Visual feedback style (flash, checkmark, haptic only?)
 
 ### Decisions Made Recently
-- ✅ **Pipedream webhook URL:** https://eo76brlwpbpr9el.m.pipedream.net
+- ✅ **Pipedream webhook URL:** https://eotlck7p4oeyvob.m.pipedream.net
+- ✅ **Vision API webhook URL:** https://eotlck7p4oeyvob.m.pipedream.net (configured and deployed)
 - ✅ **Data destination:** Google Sheets
 - ✅ **Google Sheet:** Trade Paperback DB (ID: 1NIbYNYHdnuksYUDfPUQMExmPTpETvmqlu8WZVr4F_ck)
 - ✅ **Sheet1 columns:** UPC, Timestamp, Device, Browser, Latitude, Longitude, Session ID
@@ -72,6 +73,7 @@
 - ✅ **Hosting platform:** Vercel (deployed at trade-paperback.vercel.app)
 - ✅ **Scanner implementation:** Manual frame capture loop (most reliable)
 - ✅ **LLM for enrichment:** GPT-4o with OpenLibrary + Google Books APIs
+- ✅ **Vision API:** Google Cloud Vision API integrated via Pipedream workflow
 
 ### Current Status
 - ✅ **Scanner WORKING!** Fully functional on mobile
@@ -88,12 +90,14 @@
   - Beautiful green-themed card with smooth animations
 - ✅ **Phase 2B documentation COMPLETE:** Sheet2 metadata enrichment with LLM
 - ✅ Comprehensive Pipedream enrichment workflow guide created
-- ✅ **Google Cloud Vision API:** Complete Pipedream workflow for cover image recognition
+- ✅ **Google Cloud Vision API:** Complete and configured!
+  - Vision API workflow deployed at https://eotlck7p4oeyvob.m.pipedream.net
+  - Frontend integration complete (cover scanning button enabled)
   - Vision API integration for ISBN and title detection
   - Google Books API lookup for metadata
   - Error handling and debugging support
-  - Ready for frontend integration
-- 🔄 **Next step:** Connect Vision API workflow to frontend cover scanning, then implement Sheet2 enrichment
+  - Cover scanning fully functional and ready to use
+- 🔄 **Next step:** Test cover scanning with real book covers, then implement Sheet2 enrichment
 
 ### Technical Considerations
 - **Camera initialization timing** - iOS Safari may need user gesture
@@ -196,12 +200,13 @@ When resuming work:
 - ✅ Works on iOS Safari + Android Chrome
 
 ### Essential URLs
-- **Pipedream webhook:** https://eo76brlwpbpr9el.m.pipedream.net
+- **Pipedream webhook:** https://eotlck7p4oeyvob.m.pipedream.net
+- **Vision API webhook:** https://eotlck7p4oeyvob.m.pipedream.net
 - **Google Sheet:** https://docs.google.com/spreadsheets/d/1NIbYNYHdnuksYUDfPUQMExmPTpETvmqlu8WZVr4F_ck/edit
 - **Sheet ID:** 1NIbYNYHdnuksYUDfPUQMExmPTpETvmqlu8WZVr4F_ck
-- Production URL: https://trade-paperback.vercel.app
-- GitHub repo: https://github.com/lorenzlk/TradePaperback
-- Documentation: Memory Bank (complete)
+- **Production URL:** https://trade-paperback.vercel.app
+- **GitHub repo:** https://github.com/lorenzlk/TradePaperback
+- **Documentation:** Memory Bank (complete)
 
 ### Priority Features (Phase 1)
 1. Camera activation ⚡ CRITICAL

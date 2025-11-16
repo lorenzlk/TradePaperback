@@ -6,6 +6,7 @@ A browser-based UPC/barcode scanner that instantly captures product codes using 
 
 - **Instant Camera Launch** - Opens camera immediately on page load
 - **Real-Time Scanning** - Detects UPC-A, UPC-E, and EAN-13 barcodes
+- **Cover Image Recognition** - Scan book covers to identify ISBNs using Google Cloud Vision API
 - **Auto-Submit** - Automatically sends scan data to backend
 - **Mobile-First Design** - Optimized for phone screens
 - **Offline-Ready** - Handles network failures gracefully
@@ -44,12 +45,15 @@ Edit `config.js` to customize:
 ```javascript
 const CONFIG = {
   WEBHOOK_URL: 'https://your-webhook-url.m.pipedream.net',
+  VISION_API_URL: 'https://your-vision-webhook-url.m.pipedream.net', // For cover scanning
   ENABLE_GEOLOCATION: false,
   ENABLE_HAPTIC_FEEDBACK: true,
   SCAN_COOLDOWN_MS: 2000,
   DEBUG_MODE: false
 };
 ```
+
+**Note:** Cover scanning requires Google Cloud Vision API setup. See `PIPEDREAM-VISION-WORKFLOW.md` for instructions.
 
 ## 📊 Backend Setup
 
@@ -61,6 +65,17 @@ const CONFIG = {
 4. Copy the webhook URL to `config.js`
 
 See `pipedream-setup.md` for detailed instructions.
+
+### Google Cloud Vision API (Cover Scanning)
+
+To enable cover image recognition:
+
+1. Create a Pipedream workflow following `PIPEDREAM-VISION-WORKFLOW.md`
+2. Add the code from `pipedream-code-step.js` to a Node.js step
+3. Configure Google Cloud credentials in Pipedream Secrets
+4. Copy the webhook URL to `VISION_API_URL` in `config.js`
+
+**Note:** The "📷 Scan Cover" button will be disabled until `VISION_API_URL` is configured.
 
 ### Google Sheets
 
