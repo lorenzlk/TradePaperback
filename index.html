@@ -61,7 +61,10 @@
         <!-- Metadata Confirmation Card -->
         <div id="metadata-card" class="metadata-card hidden">
             <div class="metadata-header">
-                <span class="metadata-title">📦 Scan Confirmed</span>
+                <div class="metadata-title-container">
+                    <span class="metadata-title" id="metadata-title-text">📦 Scan Confirmed</span>
+                    <span id="metadata-verified-badge" class="metadata-verified-badge hidden">✓ Verified</span>
+                </div>
                 <button id="metadata-close" class="metadata-close">✕</button>
             </div>
             <div class="metadata-body">
@@ -103,6 +106,9 @@
                 <div class="metadata-status">
                     <span id="metadata-status-text">✓ Saved to database</span>
                 </div>
+            </div>
+            <div class="metadata-footer">
+                <button id="metadata-continue" class="metadata-continue-btn">Continue → Next Book</button>
             </div>
         </div>
 

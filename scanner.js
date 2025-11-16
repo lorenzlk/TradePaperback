@@ -34,6 +34,7 @@ const metadataTitleValue = document.getElementById('metadata-title-value');
 const metadataPublisher = document.getElementById('metadata-publisher');
 const metadataProductFormat = document.getElementById('metadata-product-format');
 const metadataEnriched = document.getElementById('metadata-enriched');
+const metadataContinue = document.getElementById('metadata-continue');
 
 // Initialize scanner on page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -297,8 +298,8 @@ function handleBarcodeDetected(result) {
     // Show success feedback
     showSuccessFeedback();
     
-    // Show metadata confirmation card
-    showMetadataCard(code, format);
+    // Show metadata confirmation card (barcode scan - not verified yet)
+    showMetadataCard(code, format, false);
     
     // Vibrate if supported
     if (CONFIG.ENABLE_HAPTIC_FEEDBACK && navigator.vibrate) {
@@ -327,16 +328,27 @@ function isValidUPC(code) {
 
 // Show success feedback animation
 function showSuccessFeedback() {
+    // Show prominent success overlay
     successFeedback.classList.remove('hidden');
     updateStatus('✓ Scan captured!');
     
+    // Add visual flash to scan frame
+    const scanFrame = document.querySelector('.scan-frame');
+    if (scanFrame) {
+        scanFrame.classList.add('scan-success-flash');
+        setTimeout(() => {
+            scanFrame.classList.remove('scan-success-flash');
+        }, 800);
+    }
+    
+    // Keep success feedback visible longer for better confirmation
     setTimeout(() => {
         successFeedback.classList.add('hidden');
-    }, 1000);
+    }, 2000);
 }
 
 // Show metadata confirmation card
-function showMetadataCard(upc, format) {
+function showMetadataCard(upc, format, bookVerified = false) {
     // Populate card with scan data
     metadataUpc.textContent = upc;
     metadataFormat.textContent = format;
@@ -350,6 +362,40 @@ function showMetadataCard(upc, format) {
     });
     metadataTime.textContent = timeStr;
     
+    // Update header based on verification status
+    const metadataTitleText = document.getElementById('metadata-title-text');
+    const verifiedBadge = document.getElementById('metadata-verified-badge');
+    const statusText = document.getElementById('metadata-status-text');
+    
+    if (bookVerified) {
+        // Book was identified and verified
+        if (metadataTitleText) {
+            metadataTitleText.textContent = '✓ Book Verified';
+        }
+        if (verifiedBadge) {
+            verifiedBadge.classList.remove('hidden');
+        }
+        if (statusText) {
+            statusText.textContent = '✓ Scanned & Verified';
+            statusText.classList.add('verified-status');
+        }
+        // Add verified class to card
+        metadataCard.classList.add('book-verified');
+    } else {
+        // Just barcode scanned
+        if (metadataTitleText) {
+            metadataTitleText.textContent = '📦 Scan Confirmed';
+        }
+        if (verifiedBadge) {
+            verifiedBadge.classList.add('hidden');
+        }
+        if (statusText) {
+            statusText.textContent = '✓ Saved to database';
+            statusText.classList.remove('verified-status');
+        }
+        metadataCard.classList.remove('book-verified');
+    }
+    
     // Reset cover image state
     if (metadataCoverContainer) {
         metadataCoverContainer.classList.add('hidden');
@@ -360,15 +406,20 @@ function showMetadataCard(upc, format) {
         metadataCoverImage.src = '';
     }
     
-    // Show the card
+    // Show the card with success animation
     metadataCard.classList.remove('hidden');
     
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-        if (!metadataCard.classList.contains('hidden')) {
-            hideMetadataCard();
-        }
-    }, 5000);
+    // Add success highlight to card header
+    const metadataHeader = document.querySelector('.metadata-header');
+    if (metadataHeader) {
+        metadataHeader.classList.add('success-highlight');
+        setTimeout(() => {
+            metadataHeader.classList.remove('success-highlight');
+        }, 1000);
+    }
+    
+    // Don't auto-hide - user clicks Continue button to proceed to next book
+    // This allows them to review the scan before moving on
 }
 
 // Hide metadata confirmation card
@@ -738,6 +789,16 @@ if (metadataClose) {
     });
 }
 
+// Continue button - proceed to next book
+if (metadataContinue) {
+    metadataContinue.addEventListener('click', () => {
+        hideMetadataCard();
+        updateStatus('Ready to scan');
+        // Reset scan state for next scan
+        isProcessing = false;
+    });
+}
+
 // Cover scan button
 if (coverScanBtn) {
     // Check if Vision API is configured and update button state
@@ -792,8 +853,8 @@ async function captureAndIdentifyCover() {
             // Show success feedback
             showSuccessFeedback();
             
-            // Show metadata card with book data
-            showBookMetadata(bookData);
+            // Show metadata card with book data (verified)
+            showBookMetadata(bookData, true);
             
             // Send to backend (same as barcode scan)
             sendScanData(bookData.isbn, 'COVER_SCAN');
@@ -860,7 +921,7 @@ async function identifyBookCover(imageBase64) {
 }
 
 // Show book metadata in card
-function showBookMetadata(bookData) {
+function showBookMetadata(bookData, verified = false) {
     // Populate basic fields
     metadataUpc.textContent = bookData.isbn || '-';
     metadataFormat.textContent = 'Cover Scan';
@@ -901,14 +962,36 @@ function showBookMetadata(bookData) {
         metadataEnriched.classList.remove('hidden');
     }
     
+    // Update header and status for verification
+    const metadataTitleText = document.getElementById('metadata-title-text');
+    const verifiedBadge = document.getElementById('metadata-verified-badge');
+    const statusText = document.getElementById('metadata-status-text');
+    
+    if (verified && (bookData.title || bookData.isbn)) {
+        // Book was identified and verified
+        if (metadataTitleText) {
+            metadataTitleText.textContent = '✓ Book Verified';
+        }
+        if (verifiedBadge) {
+            verifiedBadge.classList.remove('hidden');
+        }
+        if (statusText) {
+            statusText.textContent = '✓ Scanned & Verified';
+            statusText.classList.add('verified-status');
+        }
+        metadataCard.classList.add('book-verified');
+    }
+    
     // Show the card
     metadataCard.classList.remove('hidden');
     
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-        if (!metadataCard.classList.contains('hidden')) {
-            hideMetadataCard();
-        }
-    }, 5000);
+    // Add success highlight to card header
+    const metadataHeader = document.querySelector('.metadata-header');
+    if (metadataHeader) {
+        metadataHeader.classList.add('success-highlight');
+        setTimeout(() => {
+            metadataHeader.classList.remove('success-highlight');
+        }, 1000);
+    }
 }
 
