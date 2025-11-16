@@ -1,0 +1,24 @@
+{
+  "name": "tradepaperback",
+  "version": "1.0.0",
+  "description": "A browser-based UPC/barcode scanner that instantly captures product codes using your mobile device's camera. No app installation required!",
+  "main": "config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lorenzlk/TradePaperback.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/lorenzlk/TradePaperback/issues"
+  },
+  "homepage": "https://github.com/lorenzlk/TradePaperback#readme",
+  "dependencies": {
+    "@google-cloud/vision": "^5.3.4"
+  }
+}

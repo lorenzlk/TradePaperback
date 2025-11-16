@@ -6,6 +6,7 @@ let videoStream = null;
 let lastScannedCode = null;
 let lastScanTime = 0;
 let isProcessing = false;
+let sessionId = null; // Session ID for tracking scan sessions
 
 // DOM Elements
 const loading = document.getElementById('loading');
@@ -26,12 +27,28 @@ const metadataClose = document.getElementById('metadata-close');
 const metadataUpc = document.getElementById('metadata-upc');
 const metadataFormat = document.getElementById('metadata-format');
 const metadataTime = document.getElementById('metadata-time');
+const metadataCoverContainer = document.getElementById('metadata-cover-container');
+const metadataCoverImage = document.getElementById('metadata-cover-image');
+const coverScanBtn = document.getElementById('cover-scan-btn');
+const metadataTitleValue = document.getElementById('metadata-title-value');
+const metadataPublisher = document.getElementById('metadata-publisher');
+const metadataProductFormat = document.getElementById('metadata-product-format');
+const metadataEnriched = document.getElementById('metadata-enriched');
 
 // Initialize scanner on page load
 document.addEventListener('DOMContentLoaded', () => {
+    // Track page load time
+    pageLoadTime = performance.now();
+    
     if (CONFIG.DEBUG_MODE) {
         console.log('🚀 Initializing UPC Scanner...');
         console.log('📝 Config:', CONFIG);
+    }
+    
+    // Generate session ID for this browser session
+    sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    if (CONFIG.DEBUG_MODE) {
+        console.log('🆔 Session ID:', sessionId);
     }
     
     initializeScanner();
@@ -108,6 +125,10 @@ function startBarcodeDetection() {
         
         // Add a scan counter for debugging
         let scanAttempts = 0;
+        
+        // Track scan start time
+        scanStartTime = Date.now();
+        scanAttempts = 0;
         
         // Start continuous decoding with AGGRESSIVE hints for small barcodes
         const hints = new Map();
@@ -317,6 +338,16 @@ function showMetadataCard(upc, format) {
     });
     metadataTime.textContent = timeStr;
     
+    // Reset cover image state
+    if (metadataCoverContainer) {
+        metadataCoverContainer.classList.add('hidden');
+        metadataCoverContainer.classList.remove('error');
+    }
+    if (metadataCoverImage) {
+        metadataCoverImage.classList.remove('loaded', 'error');
+        metadataCoverImage.src = '';
+    }
+    
     // Show the card
     metadataCard.classList.remove('hidden');
     
@@ -333,15 +364,73 @@ function hideMetadataCard() {
     metadataCard.classList.add('hidden');
 }
 
+// Show cover image in metadata card
+function showCoverImage(imageUrl) {
+    if (!imageUrl || !metadataCoverImage || !metadataCoverContainer) {
+        return;
+    }
+    
+    // Show container with loading spinner
+    metadataCoverContainer.classList.remove('hidden', 'error');
+    
+    // Load image
+    metadataCoverImage.onload = function() {
+        metadataCoverImage.classList.add('loaded');
+    };
+    
+    metadataCoverImage.onerror = function() {
+        metadataCoverImage.classList.add('error');
+        metadataCoverContainer.classList.add('error');
+        if (CONFIG.DEBUG_MODE) {
+            console.warn('Failed to load cover image:', imageUrl);
+        }
+    };
+    
+    metadataCoverImage.src = imageUrl;
+}
+
 // Send scan data to webhook
 async function sendScanData(upc, format) {
+    // Get enhanced device info
+    const deviceInfo = getEnhancedDeviceInfo();
+    
+    // Calculate scan duration
+    const scanDuration = scanStartTime ? Date.now() - scanStartTime : null;
+    
     const payload = {
+        // Core fields
         upc: upc,
         timestamp: new Date().toISOString(),
-        device: getDeviceInfo(),
-        browser: navigator.userAgent,
-        format: format
+        device: getDeviceInfo(), // Keep simple version for compatibility
+        browser: navigator.userAgent, // Keep full user agent
+        format: format,
+        session_id: sessionId || 'unknown',
+        
+        // Enhanced device info
+        screen_resolution: deviceInfo.screen_resolution,
+        viewport_size: deviceInfo.viewport_size,
+        device_pixel_ratio: deviceInfo.device_pixel_ratio,
+        os: deviceInfo.os,
+        os_version: deviceInfo.os_version,
+        browser_name: deviceInfo.browser,
+        browser_version: deviceInfo.browser_version,
+        timezone: deviceInfo.timezone,
+        language: deviceInfo.language,
+        is_online: deviceInfo.online,
+        
+        // Performance metrics
+        scan_duration_ms: scanDuration,
+        scan_attempts: scanAttempts,
+        page_load_time_ms: pageLoadTime ? Math.round(pageLoadTime) : null
     };
+    
+    // Add network info if available
+    if (deviceInfo.connection_type) {
+        payload.connection_type = deviceInfo.connection_type;
+    }
+    if (deviceInfo.network_speed_mbps) {
+        payload.network_speed_mbps = deviceInfo.network_speed_mbps;
+    }
     
     // Add geolocation if enabled
     if (CONFIG.ENABLE_GEOLOCATION) {
@@ -357,6 +446,10 @@ async function sendScanData(upc, format) {
             }
         }
     }
+    
+    // Reset scan tracking for next scan
+    scanStartTime = Date.now();
+    scanAttempts = 0;
     
     if (CONFIG.DEBUG_MODE) {
         console.log('📤 Sending payload:', payload);
@@ -435,6 +528,65 @@ function getDeviceInfo() {
     
     // Desktop/Other
     return navigator.platform || 'Unknown';
+}
+
+// Get enhanced device information
+function getEnhancedDeviceInfo() {
+    const ua = navigator.userAgent;
+    const info = {
+        platform: navigator.platform || 'Unknown',
+        screen_resolution: `${screen.width}x${screen.height}`,
+        viewport_size: `${window.innerWidth}x${window.innerHeight}`,
+        device_pixel_ratio: window.devicePixelRatio || 1,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        language: navigator.language || 'unknown',
+        online: navigator.onLine
+    };
+    
+    // Parse OS version more accurately
+    if (/iPhone|iPad|iPod/.test(ua)) {
+        const match = ua.match(/OS (\d+)[._](\d+)[._]?(\d+)?/);
+        if (match) {
+            info.os = 'iOS';
+            info.os_version = `${match[1]}.${match[2]}${match[3] ? '.' + match[3] : ''}`;
+        } else {
+            info.os = 'iOS';
+            info.os_version = 'unknown';
+        }
+    } else if (/Android/.test(ua)) {
+        const match = ua.match(/Android (\d+\.\d+(?:\.\d+)?)/);
+        info.os = 'Android';
+        info.os_version = match ? match[1] : 'unknown';
+    } else {
+        info.os = navigator.platform || 'Unknown';
+        info.os_version = 'unknown';
+    }
+    
+    // Parse browser version
+    if (/Chrome/.test(ua) && !/Edg/.test(ua)) {
+        const match = ua.match(/Chrome\/(\d+\.\d+\.\d+\.\d+)/);
+        info.browser = 'Chrome';
+        info.browser_version = match ? match[1] : 'unknown';
+    } else if (/Safari/.test(ua) && !/Chrome/.test(ua)) {
+        const match = ua.match(/Version\/(\d+\.\d+)/);
+        info.browser = 'Safari';
+        info.browser_version = match ? match[1] : 'unknown';
+    } else if (/Firefox/.test(ua)) {
+        const match = ua.match(/Firefox\/(\d+\.\d+)/);
+        info.browser = 'Firefox';
+        info.browser_version = match ? match[1] : 'unknown';
+    } else {
+        info.browser = 'Unknown';
+        info.browser_version = 'unknown';
+    }
+    
+    // Network information (if available)
+    if (navigator.connection) {
+        info.connection_type = navigator.connection.effectiveType || 'unknown';
+        info.network_speed_mbps = navigator.connection.downlink || null;
+    }
+    
+    return info;
 }
 
 // Get geolocation (if enabled)
@@ -572,5 +724,159 @@ if (metadataClose) {
     metadataClose.addEventListener('click', () => {
         hideMetadataCard();
     });
+}
+
+// Cover scan button
+if (coverScanBtn) {
+    coverScanBtn.addEventListener('click', () => {
+        captureAndIdentifyCover();
+    });
+}
+
+// Capture cover photo and identify book
+async function captureAndIdentifyCover() {
+    try {
+        updateStatus('📷 Capturing cover...');
+        
+        // Create canvas to capture current video frame
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        // Draw current video frame to canvas
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to base64
+        const imageBase64 = canvas.toDataURL('image/jpeg', 0.8);
+        
+        // Remove data URL prefix
+        const base64Data = imageBase64.split(',')[1];
+        
+        updateStatus('🔍 Identifying book...');
+        
+        // Call backend endpoint (we'll create this next)
+        const bookData = await identifyBookCover(base64Data);
+        
+        if (bookData && bookData.isbn) {
+            // Show success feedback
+            showSuccessFeedback();
+            
+            // Show metadata card with book data
+            showBookMetadata(bookData);
+            
+            // Send to backend (same as barcode scan)
+            sendScanData(bookData.isbn, 'COVER_SCAN');
+            
+        } else {
+            showError('Could not identify book. Try scanning barcode instead.');
+            updateStatus('Ready to scan');
+        }
+        
+    } catch (error) {
+        console.error('Cover scan error:', error);
+        showError('Failed to identify book: ' + error.message);
+        updateStatus('Ready to scan');
+    }
+}
+
+// Call backend API to identify book from cover
+async function identifyBookCover(imageBase64) {
+    // Check if endpoint is configured
+    if (!CONFIG.VISION_API_URL || CONFIG.VISION_API_URL.includes('your-pipedream')) {
+        throw new Error('Vision API endpoint not configured. See PIPEDREAM-VISION-WORKFLOW.md');
+    }
+    
+    try {
+        updateStatus('🔍 Sending to Vision API...');
+        
+        const response = await fetch(CONFIG.VISION_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                image: imageBase64,
+                timestamp: new Date().toISOString()
+            }),
+            signal: AbortSignal.timeout(CONFIG.NETWORK_TIMEOUT_MS)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`API error ${response.status}: ${errorText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to identify book');
+        }
+        
+        return data.bookData || null;
+        
+    } catch (error) {
+        console.error('Vision API call failed:', error);
+        
+        if (error.name === 'TimeoutError') {
+            throw new Error('Request timed out. Check your internet connection.');
+        }
+        
+        throw error;
+    }
+}
+
+// Show book metadata in card
+function showBookMetadata(bookData) {
+    // Populate basic fields
+    metadataUpc.textContent = bookData.isbn || '-';
+    metadataFormat.textContent = 'Cover Scan';
+    
+    // Format timestamp
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    metadataTime.textContent = timeStr;
+    
+    // Show enriched data if available
+    if (bookData.title) {
+        metadataTitleValue.textContent = bookData.title;
+        if (bookData.subtitle) {
+            metadataTitleValue.textContent += ': ' + bookData.subtitle;
+        }
+    }
+    
+    if (bookData.publisher) {
+        metadataPublisher.textContent = bookData.publisher;
+    }
+    
+    if (bookData.format || bookData.categories) {
+        metadataProductFormat.textContent = bookData.format || bookData.categories?.[0] || '-';
+    }
+    
+    // Show cover image if available
+    if (bookData.imageLinks?.thumbnail || bookData.imageLinks?.smallThumbnail) {
+        const coverUrl = bookData.imageLinks.thumbnail || bookData.imageLinks.smallThumbnail;
+        showCoverImage(coverUrl);
+    }
+    
+    // Show enriched section
+    if (bookData.title || bookData.publisher) {
+        metadataEnriched.classList.remove('hidden');
+    }
+    
+    // Show the card
+    metadataCard.classList.remove('hidden');
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        if (!metadataCard.classList.contains('hidden')) {
+            hideMetadataCard();
+        }
+    }, 5000);
 }
 

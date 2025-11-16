@@ -38,7 +38,15 @@
 - ✅ Created Sheet2 CSV header template
 - ✅ Updated Memory Bank to reflect enrichment documentation completion
 - 🆕 **NEW REQUIREMENT:** On-screen metadata display after scan for user confirmation
-- 🔄 Implementing metadata confirmation card in scanner UI
+- ✅ Implementing metadata confirmation card in scanner UI
+- ✅ **Google Cloud Vision API Integration:** Built Pipedream workflow for cover image recognition
+  - Created pipedream-code-step.js with Vision API client
+  - Documented complete setup guide (PIPEDREAM-VISION-WORKFLOW.md)
+  - Supports ISBN extraction from web detection and title from text detection
+  - Integrates with Google Books API for metadata lookup
+  - Handles base64 image processing and error handling
+- ✅ Added cover scanning button to scanner UI
+- ✅ Created test scripts (test-pipedream-vision.js, setup-vision-url.js)
 
 ## Active Decisions & Considerations
 
@@ -74,11 +82,18 @@
 - ✅ All Phase 1 features complete and tested
 - ✅ **Phase 2A COMPLETE:** On-screen metadata confirmation card
   - Shows UPC, format, and timestamp after each scan
+  - Displays cover image when enriched data is available
+  - Loading spinner while image loads, fallback icon if unavailable
   - Auto-dismisses after 5 seconds or user can close manually
   - Beautiful green-themed card with smooth animations
 - ✅ **Phase 2B documentation COMPLETE:** Sheet2 metadata enrichment with LLM
 - ✅ Comprehensive Pipedream enrichment workflow guide created
-- 🔄 **Next step:** Implement enrichment workflow in Pipedream, then connect to metadata card
+- ✅ **Google Cloud Vision API:** Complete Pipedream workflow for cover image recognition
+  - Vision API integration for ISBN and title detection
+  - Google Books API lookup for metadata
+  - Error handling and debugging support
+  - Ready for frontend integration
+- 🔄 **Next step:** Connect Vision API workflow to frontend cover scanning, then implement Sheet2 enrichment
 
 ### Technical Considerations
 - **Camera initialization timing** - iOS Safari may need user gesture
@@ -110,6 +125,10 @@
 ├── test-webhook.html                  # ✅ Interactive webhook testing tool
 ├── pipedream-setup.md                 # ✅ Pipedream workflow guide (Sheet1)
 ├── pipedream-enrichment-setup.md      # ✅ LLM enrichment workflow guide (Sheet2)
+├── PIPEDREAM-VISION-WORKFLOW.md       # ✅ Google Cloud Vision API workflow guide
+├── pipedream-code-step.js             # ✅ Vision API Pipedream code step
+├── test-pipedream-vision.js           # ✅ Vision API test script
+├── setup-vision-url.js                # ✅ Vision API URL setup script
 ├── google-sheets-setup.md             # ✅ Google Sheets integration guide
 ├── sheet2-metadata-setup.md           # ✅ Sheet2 metadata structure guide
 ├── sheet2-headers.csv                 # ✅ Sheet2 CSV header template
@@ -180,8 +199,8 @@ When resuming work:
 - **Pipedream webhook:** https://eo76brlwpbpr9el.m.pipedream.net
 - **Google Sheet:** https://docs.google.com/spreadsheets/d/1NIbYNYHdnuksYUDfPUQMExmPTpETvmqlu8WZVr4F_ck/edit
 - **Sheet ID:** 1NIbYNYHdnuksYUDfPUQMExmPTpETvmqlu8WZVr4F_ck
-- Production URL: TBD (awaiting hosting platform decision)
-- GitHub repo: TBD
+- Production URL: https://trade-paperback.vercel.app
+- GitHub repo: https://github.com/lorenzlk/TradePaperback
 - Documentation: Memory Bank (complete)
 
 ### Priority Features (Phase 1)

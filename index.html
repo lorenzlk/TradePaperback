@@ -65,6 +65,14 @@
                 <button id="metadata-close" class="metadata-close">✕</button>
             </div>
             <div class="metadata-body">
+                <!-- Cover Image (shows when enriched data is available) -->
+                <div id="metadata-cover-container" class="metadata-cover-container hidden">
+                    <img id="metadata-cover-image" class="metadata-cover-image" alt="Cover" />
+                    <div class="metadata-cover-loading">
+                        <div class="spinner-small"></div>
+                    </div>
+                </div>
+                
                 <div class="metadata-row">
                     <span class="metadata-label">UPC:</span>
                     <span id="metadata-upc" class="metadata-value">-</span>
@@ -97,6 +105,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- Cover Scan Button -->
+        <button id="cover-scan-btn" class="cover-scan-btn">📷 Scan Cover</button>
 
         <!-- Status Bar -->
         <div class="status-bar">

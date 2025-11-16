@@ -11,6 +11,7 @@
 ### Backend Stack
 - **Pipedream** - Webhook receiver and data pipeline orchestration
 - **HTTPS** - Secure data transmission protocol
+- **Google Cloud Vision API** - Image recognition for cover scanning (ISBN/title detection)
 - **OpenAI GPT-4o** - LLM for metadata enrichment and formatting
 - **OpenLibrary API** - Free book/comic metadata source
 - **Google Books API** - Additional metadata source with cover images
@@ -194,7 +195,34 @@ navigator.mediaDevices.getUserMedia({
 
 **Actual Webhook URL:** https://eo76brlwpbpr9el.m.pipedream.net
 
-#### Workflow 2: Metadata Enrichment (Sheet2) 
+#### Workflow 2: Cover Image Recognition (Vision API)
+**Status:** ✅ Complete, ready for frontend integration
+
+**Architecture:**
+1. HTTP Trigger: Receives base64 image from frontend
+2. Google Cloud Vision API: Analyzes image (TEXT_DETECTION, WEB_DETECTION, LABEL_DETECTION)
+3. Extract ISBN from web detection (Amazon URLs)
+4. Extract title from OCR text detection
+5. Google Books API: Lookup metadata by ISBN or title
+6. Return structured book data to frontend
+
+**APIs Used:**
+- **Google Cloud Vision API** - Image analysis and recognition
+- **Google Books API** - `https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}` or `q=intitle:"{title}"`
+
+**Output Format:** JSON with book metadata
+- ISBN, title, subtitle, authors, publisher, publishedDate
+- Description, pageCount, categories, imageLinks
+- Series, volumeIssue, format (for comic books)
+- Confidence level and data source
+
+**Files:**
+- `pipedream-code-step.js` - Complete Vision API code step
+- `PIPEDREAM-VISION-WORKFLOW.md` - Setup guide
+- `test-pipedream-vision.js` - Test script
+- `setup-vision-url.js` - Config updater
+
+#### Workflow 3: Metadata Enrichment (Sheet2) 
 **Status:** 📝 Documented, ready for implementation
 
 **Architecture:**

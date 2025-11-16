@@ -3,11 +3,13 @@
 
 const CONFIG = {
   // Pipedream webhook endpoint
-  WEBHOOK_URL: 'https://eo76brlwpbpr9el.m.pipedream.net',
+  // Replace with your Pipedream webhook URL
+  WEBHOOK_URL: 'https://your-webhook-url.m.pipedream.net',
   
   // Google Sheet for data storage
-  SHEET_URL: 'https://docs.google.com/spreadsheets/d/1NIbYNYHdnuksYUDfPUQMExmPTpETvmqlu8WZVr4F_ck/edit',
-  SHEET_ID: '1NIbYNYHdnuksYUDfPUQMExmPTpETvmqlu8WZVr4F_ck',
+  // Replace with your Google Sheet URL and ID
+  SHEET_URL: 'https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit',
+  SHEET_ID: 'YOUR_SHEET_ID',
   
   // Feature flags
   ENABLE_GEOLOCATION: false, // Set to true to collect location data
@@ -18,7 +20,7 @@ const CONFIG = {
   FRAME_PROCESSING_INTERVAL: 250, // Process every N milliseconds (not every frame)
   
   // Debug mode
-  DEBUG_MODE: true, // ENABLED for troubleshooting // Set to true for console logging
+  DEBUG_MODE: false, // Set to true for console logging
   
   // Retry settings
   MAX_RETRIES: 3,
@@ -26,6 +28,14 @@ const CONFIG = {
   
   // Timeout settings
   NETWORK_TIMEOUT_MS: 5000,
+  
+  // Google Cloud Vision API
+  // Note: google-cloud-key.json should be in .gitignore
+  GOOGLE_CLOUD_KEY_FILE: './google-cloud-key.json',
+  GOOGLE_CLOUD_PROJECT_ID: 'your-project-id',
+  // Pipedream Vision API webhook URL
+  // Replace with your Vision API workflow webhook URL
+  VISION_API_URL: 'https://your-vision-webhook-url.m.pipedream.net',
 };
 
 // Export for use in scanner.js

@@ -115,10 +115,15 @@ Return a JSON object with these exact fields (use null if unknown):
   "price_usd": number or null,
   "genre": "Comma-separated genres",
   "description": "Brief 250-character summary",
-  "cover_image_url": "Direct image URL or null",
+  "cover_image_url": "Direct image URL or null - PRIORITIZE Google Books or OpenLibrary cover",
   "goodreads_rating": number or null,
   "data_source": "List sources used"
 }
+
+IMPORTANT: For cover_image_url, prioritize these sources:
+1. Google Books imageLinks.thumbnail or imageLinks.smallThumbnail
+2. OpenLibrary covers (construct from cover ID if available)
+3. Return null if no image found
 
 Return ONLY the JSON object, no additional text.`
 ```
