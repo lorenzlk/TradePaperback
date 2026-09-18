@@ -238,7 +238,8 @@ body {
     padding: 8px 12px;
 }
 
-.scanner-debug {
+.scanner-debug,
+.camera-status {
     font-size: 11px;
     font-family: monospace;
     color: #00ff00;
@@ -696,6 +697,16 @@ body {
 }
 
 /* Cover Image Container */
+.metadata-cover-label {
+    font-size: 11px;
+    color: #888;
+    text-align: center;
+    margin-bottom: 8px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
 .metadata-cover-container {
     position: relative;
     width: 100%;

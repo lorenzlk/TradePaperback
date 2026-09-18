@@ -1,0 +1,86 @@
+Enrich metadata for this book/comic:
+
+UPC/ISBN: ${steps.trigger.event.upc}
+Scanned at: ${steps.trigger.event.timestamp}
+
+OpenLibrary Data: ${JSON.stringify(steps.openLibraryData, null, 2)}
+Google Books Data: ${JSON.stringify(steps.googleBooksData, null, 2)}
+Comic Vine Data: ${JSON.stringify(steps.comicVineData, null, 2)}
+eBay Pricing Data: ${JSON.stringify(steps.eBayData, null, 2)}
+
+Return a JSON object with ALL these fields (use null if unavailable):
+
+{
+  // Core Metadata (A-P)
+  "title": "Full product title",
+  "publisher": "Publisher name",
+  "release_date": "YYYY-MM-DD",
+  "format": "Trade Paperback|Hardcover|Single Issue|Omnibus|Graphic Novel",
+  "series": "Series name or null",
+  "volume_issue": "Vol X or #X or null",
+  "page_count": number or null,
+  "isbn": "ISBN-13",
+  "price_usd": number or null,
+  "genre": "Genre1, Genre2, Genre3",
+  "description": "Brief 250-character summary",
+  "cover_image_url": "Direct image URL - prioritize Google Books or OpenLibrary",
+  "goodreads_rating": number or null,
+  "data_source": "List all sources used",
+  
+  // Comic Specific (Q-X)
+  "creators": "Writer, Artist, Inker (comma-separated) or null",
+  "cover_artist": "Cover artist name or null",
+  "variant_type": "Regular, Variant A, 1:25, etc. or null",
+  "first_print": "Yes/No or null",
+  "print_number": "1st, 2nd, 3rd or null",
+  "comic_vine_id": "Comic Vine ID or null",
+  "key_issue": "Yes/No or null",
+  "key_issue_reason": "First appearance, Death, etc. or null",
+  
+  // Pricing (Y-AF)
+  "msrp": number or null,
+  "market_price_high": number or null,
+  "market_price_low": number or null,
+  "market_price_avg": number or null,
+  "price_trend": "↑ Rising|→ Stable|↓ Falling|null",
+  "last_sale_date": "YYYY-MM-DD or null",
+  "sales_count": number or null,
+  "demand_score": number (1-10) or null,
+  
+  // Physical (AG-AK)
+  "dimensions": "6.6 x 10.2 x 0.5 inches or null",
+  "weight_oz": number or null,
+  "binding": "Perfect Bound, Saddle Stitch or null",
+  "paper_quality": "Glossy, Matte, Newsprint or null",
+  "color": "Full Color, Black & White or null",
+  
+  // Content (AL-AP)
+  "language": "English or null",
+  "age_rating": "All Ages, Teen, Mature or null",
+  "content_warnings": "Violence, Language or null",
+  "story_arc": "Story arc name or null",
+  "collected_in": "Collection info or null",
+  
+  // External IDs (AY-BD)
+  "google_books_id": "Google Books volume ID or null",
+  "openlibrary_id": "OpenLibrary ID or null",
+  "amazon_asin": "Amazon ASIN or null",
+  "ebay_item_number": "eBay item number or null",
+  "goodreads_id": "Goodreads book ID or null",
+  "wikipedia_url": "Wikipedia URL or null",
+  
+  // Social (BK-BO)
+  "goodreads_reviews": number or null,
+  "amazon_rating": number or null,
+  "amazon_reviews": number or null,
+  "awards": "Award name or null"
+}
+
+IMPORTANT:
+- Use null for unavailable data, never make up data
+- For cover_image_url, prioritize: Google Books > OpenLibrary > null
+- For pricing, use eBay data if available
+- For comics, prioritize Comic Vine data
+- Be accurate and concise
+- Return ONLY valid JSON, no markdown or extra text
+

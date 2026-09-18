@@ -180,27 +180,31 @@ Add **Google Sheets - Add Row**:
 **Spreadsheet**: Your sheet
 **Worksheet**: `Sheet2`
 
-**Row Data** (map these fields):
-```javascript
-{
-  "UPC": steps.parsedMetadata.upc,
-  "Timestamp": steps.parsedMetadata.enriched_at,
-  "Title": steps.parsedMetadata.title,
-  "Publisher": steps.parsedMetadata.publisher,
-  "Release_Date": steps.parsedMetadata.release_date,
-  "Format": steps.parsedMetadata.format,
-  "Series": steps.parsedMetadata.series,
-  "Volume_Issue": steps.parsedMetadata.volume_issue,
-  "Page_Count": steps.parsedMetadata.page_count,
-  "ISBN": steps.parsedMetadata.isbn,
-  "Price_USD": steps.parsedMetadata.price_usd,
-  "Genre": steps.parsedMetadata.genre,
-  "Description": steps.parsedMetadata.description,
-  "Cover_Image_URL": steps.parsedMetadata.cover_image_url,
-  "Goodreads_Rating": steps.parsedMetadata.goodreads_rating,
-  "Data_Source": steps.parsedMetadata.data_source
-}
+**Row Data** (map ALL 65 columns - see SHEET2-COMPLETE-STRUCTURE.md for full list):
+
+**Column A (UPC):**
 ```
+{{steps.parsedMetadata.upc}}
+```
+
+**Column B (Timestamp):**
+```
+{{steps.parsedMetadata.enriched_at}}
+```
+
+**Column C (Title):**
+```
+{{steps.parsedMetadata.title}}
+```
+
+**Column D (Publisher):**
+```
+{{steps.parsedMetadata.publisher}}
+```
+
+... (continue for all 65 columns - see complete mapping guide below)
+
+**Note:** For columns that require additional API calls (eBay pricing, Comic Vine, etc.), you'll need additional workflow steps before the Google Sheets step. See implementation guide below.
 
 ---
 

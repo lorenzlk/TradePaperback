@@ -97,6 +97,13 @@ async function initializeScanner() {
         loading.classList.add('hidden');
         scannerContainer.classList.remove('hidden');
         
+        // Update camera status indicator
+        const cameraStatus = document.getElementById('camera-status');
+        if (cameraStatus) {
+            cameraStatus.textContent = '📹 Camera Active';
+            cameraStatus.style.color = '#0f0';
+        }
+        
         updateStatus('Ready to scan');
         
         if (CONFIG.DEBUG_MODE) {
@@ -295,19 +302,27 @@ function handleBarcodeDetected(result) {
     lastScannedCode = code;
     lastScanTime = now;
     
+    // Capture image for condition verification
+    const capturedImage = captureCurrentFrame();
+    
     // Show success feedback
     showSuccessFeedback();
     
     // Show metadata confirmation card (barcode scan - not verified yet)
     showMetadataCard(code, format, false);
     
+    // Show captured image in metadata card
+    if (capturedImage) {
+        showCapturedImage(capturedImage);
+    }
+    
     // Vibrate if supported
     if (CONFIG.ENABLE_HAPTIC_FEEDBACK && navigator.vibrate) {
         navigator.vibrate(200);
     }
     
-    // Send to backend
-    sendScanData(code, format);
+    // Send to backend (include image for condition verification)
+    sendScanData(code, format, capturedImage);
     
     // Reset processing flag after cooldown
     setTimeout(() => {
@@ -452,8 +467,75 @@ function showCoverImage(imageUrl) {
     metadataCoverImage.src = imageUrl;
 }
 
+// Capture current video frame as image for condition verification
+function captureCurrentFrame() {
+    try {
+        if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) {
+            if (CONFIG.DEBUG_MODE) {
+                console.warn('⚠️ Video not ready for capture');
+            }
+            return null;
+        }
+        
+        // Create canvas to capture current video frame
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        // Draw current video frame to canvas
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to base64 JPEG (good quality for condition verification)
+        const imageBase64 = canvas.toDataURL('image/jpeg', 0.85);
+        
+        if (CONFIG.DEBUG_MODE) {
+            console.log('📸 Captured image:', {
+                width: canvas.width,
+                height: canvas.height,
+                size: imageBase64.length,
+                preview: imageBase64.substring(0, 50) + '...'
+            });
+        }
+        
+        return imageBase64;
+    } catch (error) {
+        console.error('❌ Failed to capture image:', error);
+        return null;
+    }
+}
+
+// Show captured image in metadata card
+function showCapturedImage(imageBase64) {
+    if (!imageBase64 || !metadataCoverImage || !metadataCoverContainer) {
+        return;
+    }
+    
+    // Show container
+    metadataCoverContainer.classList.remove('hidden', 'error');
+    
+    // Load image
+    metadataCoverImage.onload = function() {
+        metadataCoverImage.classList.add('loaded');
+        if (CONFIG.DEBUG_MODE) {
+            console.log('✅ Captured image displayed');
+        }
+    };
+    
+    metadataCoverImage.onerror = function() {
+        metadataCoverImage.classList.add('error');
+        metadataCoverContainer.classList.add('error');
+        if (CONFIG.DEBUG_MODE) {
+            console.warn('⚠️ Failed to display captured image');
+        }
+    };
+    
+    metadataCoverImage.src = imageBase64;
+}
+
 // Send scan data to webhook
-async function sendScanData(upc, format) {
+async function sendScanData(upc, format, capturedImage = null) {
     // Get enhanced device info
     const deviceInfo = getEnhancedDeviceInfo();
     
@@ -468,6 +550,10 @@ async function sendScanData(upc, format) {
         browser: navigator.userAgent, // Keep full user agent
         format: format,
         session_id: sessionId || 'unknown',
+        
+        // Condition verification image
+        condition_image: capturedImage ? capturedImage.split(',')[1] : null, // Base64 without data URL prefix
+        has_condition_image: !!capturedImage,
         
         // Enhanced device info
         screen_resolution: deviceInfo.screen_resolution,
@@ -688,6 +774,13 @@ function handleCameraError(error) {
     
     loading.classList.add('hidden');
     
+    // Update camera status indicator
+    const cameraStatus = document.getElementById('camera-status');
+    if (cameraStatus) {
+        cameraStatus.textContent = '❌ Camera Error: ' + error.name;
+        cameraStatus.style.color = '#f00';
+    }
+    
     if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
         // Permission denied
         permissionDenied.classList.remove('hidden');
@@ -860,13 +953,30 @@ async function captureAndIdentifyCover() {
             sendScanData(bookData.isbn, 'COVER_SCAN');
             
         } else {
-            showError('Could not identify book. Try scanning barcode instead.');
+            // More helpful error message
+            const errorMsg = bookData ? 
+                'Could not find book in database. Try scanning the barcode instead.' :
+                'Could not identify book from cover. Try scanning the barcode on the back instead.';
+            showError(errorMsg);
             updateStatus('Ready to scan');
         }
         
     } catch (error) {
         console.error('Cover scan error:', error);
-        showError('Failed to identify book: ' + error.message);
+        
+        // More user-friendly error messages
+        let errorMessage = 'Failed to identify book. ';
+        if (error.message.includes('pattern')) {
+            errorMessage += 'Could not extract valid ISBN from cover. Try scanning the barcode instead.';
+        } else if (error.message.includes('timeout')) {
+            errorMessage += 'Request timed out. Check your internet connection.';
+        } else if (error.message.includes('not configured')) {
+            errorMessage += 'Vision API not set up. See PIPEDREAM-VISION-WORKFLOW.md for setup instructions.';
+        } else {
+            errorMessage += error.message + ' Try scanning the barcode instead.';
+        }
+        
+        showError(errorMessage);
         updateStatus('Ready to scan');
     }
 }
@@ -904,7 +1014,11 @@ async function identifyBookCover(imageBase64) {
         const data = await response.json();
         
         if (!data.success) {
-            throw new Error(data.error || 'Failed to identify book');
+            // Provide more context about the error
+            const errorMsg = data.error || 'Failed to identify book';
+            console.error('Vision API error:', errorMsg);
+            console.error('Vision API debug info:', data.debug || data.visionResult);
+            throw new Error(errorMsg);
         }
         
         return data.bookData || null;
